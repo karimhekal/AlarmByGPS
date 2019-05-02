@@ -75,6 +75,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     CameraUpdate update;
     float lat = 30, lng = 0;
     View mView;
+
+    LatLng[] markersLatLng;
     Vibrator vibrator;
     LatLng saveCircleLocation;
     Marker marker;
@@ -140,7 +142,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 try {
                     Log.e("radius : ", String.valueOf(circle.getRadius()));
                     fileOutputStream.write((circle.getRadius() + "$" + latLng.latitude + "$" + latLng.longitude + System.getProperty("line.separator")).getBytes());
-
                 }catch (Exception e )
                 {
                     e.printStackTrace();
@@ -149,6 +150,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             Toast.makeText(mContext,e.getMessage(),Toast.LENGTH_LONG).show();
         }
     }
+
+
+
+
+    private void appendFile(LatLng[] latLng,String fileName) { //to append polygon which is an array of latlng
+        File file = new File(path+fileName);
+        try {
+            if (!file.exists())
+                file.createNewFile();
+            // file.delete();
+            file.createNewFile();
+            FileOutputStream fileOutputStream =new FileOutputStream(file,true);
+            if (latLng !=null) {
+                try {
+                    //Log.e("radius : ", String.valueOf(circle.getRadius()));
+                    //  fileOutputStream.write(latLng[i].+  System.getProperty("line.separator")).getBytes());
+                }catch (Exception e )
+                {
+                    e.printStackTrace();
+                }
+            }} catch (IOException e) {
+            Toast.makeText(mContext,e.getMessage(),Toast.LENGTH_LONG).show();
+        }
+    }
+
 
 
     @Override
@@ -162,14 +188,37 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         //getActivity().stopService(new Intent(getActivity(), MyService.class));
     }
 
+    MyReceiver myReceiver;
+    String[] markersField;
+
     @Override
     public void onPause() {
         super.onPause();
-
+        vibrator.cancel();
         try {
+
+
+            String point1= String.valueOf(markersLatLng[0].latitude)+"$"+String.valueOf(markersLatLng[0].longitude);
+            String point2= String.valueOf(markersLatLng[1].latitude)+"$"+String.valueOf(markersLatLng[1].longitude);
+            String point3= String.valueOf(markersLatLng[2].latitude)+"$"+String.valueOf(markersLatLng[2].longitude);
+            String point4= String.valueOf(markersLatLng[3].latitude)+"$"+String.valueOf(markersLatLng[3].longitude);
+
+            String allPoints=point1+"*"+point2+"*"+point3+"*"+point4;
+
+
+            myReceiver = new MyReceiver();
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(MyService.MY_ACTION);
+            mContext.registerReceiver(myReceiver, intentFilter);
+            Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
+            intent.putExtra("INIT_DATA", allPoints);
+            getActivity().startService(intent);
+
+            mContext.unregisterReceiver(myReceiver);
             Intent i = new Intent(mContext,MyService.class);
             if (userChoosedLocation==true){ // start the service only if the user choosed a location
-                getActivity().startService(i);}
+            //    getActivity().startService(i);
+            }
         }catch (Exception e)
         {
             Log.e("Fragment : ",e.getMessage());
@@ -180,7 +229,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
+        markersLatLng= new LatLng[4];
         mView = inflater.inflate(R.layout.map_fragment, container, false);
         clearMarkers=mView.findViewById(R.id.clear_markers);
         setRadius=mView.findViewById(R.id.set_radius);
@@ -199,7 +248,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         polygonRadio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(mContext, "Draw a polygon of 4 lines on map", Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "Draw a polygon of 4 lines on map , make sure you draw in clockwise", Toast.LENGTH_LONG).show();
                 p=true;
                 c=false;
             }
@@ -249,19 +298,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         }
     }
 
-int count=0;
+    int count=0;
     private void goToLocationZoom(double lat1, double lng1, float zoom) {
-    if (count<2){  //because this function is called one time before i start the onLocationChanged
-        LatLng ll = new LatLng(lat1, lng1);
-        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, zoom);
-        mGoogleMap.moveCamera(update);
-       count++;}
-        }
+        if (count<2){  //because this function is called one time before i start the onLocationChanged
+            LatLng ll = new LatLng(lat1, lng1);
+            CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, zoom);
+            mGoogleMap.moveCamera(update);
+            count++;}
+    }
 
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         MapsInitializer.initialize(getContext());
+
         mGoogleMap = googleMap;
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         goToLocationZoom(lat, lng, 5);
@@ -275,25 +325,27 @@ int count=0;
                 {
                     userChoosedLocation=true;
 
-                    if (circleMarker==true) {
+                    if (circleMarker==true||(markers.size()==POLYGON_POINTS)) {
                         removeEveryThing();
                         circleMarker=false;
                     }
-                    polyClicked(latLng);
-
+                    if (markers.size()!=POLYGON_POINTS) {
+                        polyClicked(latLng);
+                        appendFile(latLng, "polygon.txt"); // ellatlng elmafrod ykon array , 3addelha ba3deen bas da makan elfunction 3ashan ne store el 4 points of polygon which is an array
+                    }
                 }
                 else if (c==true)
                 {
                     userChoosedLocation=true;
                     removeEveryThing();
                     clicked(latLng);
+                    appendFile(latLng,"circle.txt"); // store latlng of circle to read it from service in background
 
 
                 }
                 else {
                     Toast.makeText(mContext, "Select Circle or Polygon first", Toast.LENGTH_SHORT).show();
                 }
-                appendFile(latLng,"circle.txt"); // eb2a ghayyr esmaha
 
             }
         });
@@ -319,6 +371,8 @@ int count=0;
 
     private void removeEveryThing() {
 
+
+        i=0;// to start polygons from points 1 again because i is the index of the array // check usage of i if you don't get it
         if (marker!=null){
             marker.remove();
             marker=null;
@@ -330,6 +384,8 @@ int count=0;
         if (markers!=null){
             for (Marker marker:markers)
             {
+
+
 
                 marker.remove();
             }
@@ -343,6 +399,7 @@ int count=0;
         }
     }
 
+    int i=0;
     private void polyClicked(LatLng latLng){
         if (markers.size()==POLYGON_POINTS)
         {
@@ -351,11 +408,23 @@ int count=0;
             removeEveryThing();
         }
         MarkerOptions options=new MarkerOptions().position(latLng).title("point");
+
+
         markers.add(mGoogleMap.addMarker(options));
-        if (markers.size()==POLYGON_POINTS)
-        {
+
+
+        if (markers.size() == POLYGON_POINTS) {
             drawPolygon();
+            markersLatLng[i] = latLng;
+            i=0; // to begin from start of the array again for the next polygon to draw
+            en=false; // 3ashan ye5osh fel opendialog tany lama y3ml check 3al polygon fel onlocationchanged  //spaghetti awy hhh
+        } else {
+            markersLatLng[i] = latLng;
+            i++;
         }
+
+
+
     }
 
     private void drawPolygon() {
@@ -459,24 +528,40 @@ int count=0;
             }
             else {
 
+                if (markers.size()==POLYGON_POINTS) { // this condition checks if we're using polygon
+                    LatLng locLatlng = new LatLng(location.getLatitude(), location.getLongitude());
+                    if (isPointInPolygon(locLatlng, markersLatLng)) // inside the polygon
+                    {
+                        if (en==false) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
+                            openDialog();
+                            en = true;
+                        }
+
+                        Toast.makeText(mContext, "AAAYWA", Toast.LENGTH_SHORT).show();
+                    }
+                    else { // user outside the polygon
+                        Toast.makeText(mContext, "LAAA2", Toast.LENGTH_SHORT).show();
+                    }
+
+                    boolean s=isPointInPolygon(locLatlng, markersLatLng);
+                    //Toast.makeText(mContext, "true", Toast.LENGTH_SHORT).show();
+                }
 
                 goToLocationZoom(location.getLatitude(),location.getLongitude(),12.5f);
                 LatLng ll=new LatLng(location.getLatitude(),location.getLongitude());
-
                 update=CameraUpdateFactory.newLatLngZoom(ll,15); // update my location every 1 second
                 float[] distance = new float[2]; // to calculate distance between user and circle
                 if (circleMarker==true) {// to make sure that we're using the circle not polygon
-
                     Location.distanceBetween(location.getLatitude(), location.getLongitude(), circle.getCenter().latitude, circle.getCenter().longitude, distance);
-
                     if (distance[0] <= circle.getRadius()) {
                         if (enough==false) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
                             openDialog();
                             //vibrator.vibrate(pattern, 1);
                             //  Toast.makeText(mContext, "Inside the circle", Toast.LENGTH_SHORT).show();
                             enough = true;
-
-                        }}else {
+                        }
+                    }else
+                    {
                         enough=false;
                         //   Toast.makeText(mContext, "Outside", Toast.LENGTH_SHORT).show();
                         //outside the circle
@@ -523,6 +608,51 @@ int count=0;
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
+    boolean en=false;
+    private boolean isPointInPolygon(LatLng tap, LatLng[] vertices) {
+
+        int intersectCount = 0;
+        int h=0;
+        while (h<vertices.length-1)
+        {
+            if ((rayCastIntersect(tap, vertices[h], vertices[h + 1]))==true) { //rayCastIntersect(tap, vertices[h], vertices[h + 1])
+                intersectCount++;
+            }
+            h++;
+        }
+        for (int s=0;s<4;s++)
+        {
+            // Toast.makeText(mContext, "asdasd", Toast.LENGTH_SHORT).show();
+        }
+
+
+
+        return ((intersectCount % 2) == 1); // odd = inside, even = outside;
+
+    }
+    boolean rayCastIntersect(LatLng tap, LatLng vertA, LatLng vertB) {
+
+        double aY = vertA.latitude;
+        double bY = vertB.latitude;
+        double aX = vertA.longitude;
+        double bX = vertB.longitude;
+        double pY = tap.latitude;
+        double pX = tap.longitude;
+
+        if ((aY > pY && bY > pY) || (aY < pY && bY < pY)
+                || (aX < pX && bX < pX)) {
+            return false; // a and b can't both be above or below pt.y, and a or
+            // b must be east of pt.x
+        }
+
+        double m = (aY - bY) / (aX - bX); // Rise over run
+        double bee = (-aX) * m + aY; // y = mx + b
+        double x = (pY - bee) / m; // algebra is neat!
+
+        return x > pX;
+    }
+
 
 
 }

@@ -60,7 +60,7 @@ public class MainActivity extends FragmentActivity {
 
         }catch (Exception e)
         {
-            Log.e("kosomak : ", e.toString());
+            Log.e(" : ", e.toString());
         }
     }
 
@@ -72,6 +72,7 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     protected void onPause() {
+
         super.onPause();
     }
 //    public void geoLocate(View view) throws IOException {

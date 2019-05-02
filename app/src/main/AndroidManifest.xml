@@ -12,6 +12,7 @@
         android:required="true" />
     <uses-permission android:name="com.google.android.providers.gsf.permissions.READ_GSERVICES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
 
@@ -21,9 +22,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+
+        <receiver android:name=".MyReceiver"  android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.INPUT_METHOD_CHANGED" />
+            </intent-filter>
+        </receiver>
+
         <activity android:name=".MainActivity"
 
             >
+
+
+
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
