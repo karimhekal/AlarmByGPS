@@ -645,7 +645,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             return false; // a and b can't both be above or below pt.y, and a or
             // b must be east of pt.x
         }
-// ok
+
         double m = (aY - bY) / (aX - bX); // Rise over run
         double bee = (-aX) * m + aY; // y = mx + b
         double x = (pY - bee) / m; // algebra is neat!

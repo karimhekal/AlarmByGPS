@@ -209,18 +209,20 @@ public class MyService extends Service {
                         mp.start();
                         final long[] pattern={250,350};
                         vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
-                        vibrator.vibrate(200);
+                        vibrator.vibrate(pattern,0);
                         enough=true;
-                        Toast.makeText(MyService.this, "AAAYWA", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MyService.this, "Youve arrived", Toast.LENGTH_SHORT).show();
                       //  mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+                        Toast.makeText(MyService.this, "click on notification to confirm", Toast.LENGTH_SHORT).show();
                         final Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-                            stopSelf();
-                        }
-                    }, 6000);
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+                                stopSelf();
+                            }
+                        }, 5000);
+
                     }
                     else { // user outside the polygon
                         Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
