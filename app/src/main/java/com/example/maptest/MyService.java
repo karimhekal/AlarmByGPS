@@ -222,7 +222,7 @@ public class MyService extends Service {
                                 stopSelf();
                             }
                         }, 5000);
-
+//as
                     }
                     else { // user outside the polygon
                         Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
