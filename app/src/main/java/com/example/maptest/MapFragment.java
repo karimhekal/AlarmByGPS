@@ -70,7 +70,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     Polygon shape;
     GoogleMap mGoogleMap;
     boolean enough=false;
-    boolean userChoosedLocation=false;
+    boolean userChoosedCircle=false;
     GoogleMap m;
     CameraUpdate update;
     float lat = 30, lng = 0;
@@ -181,12 +181,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     public void onResume() {
         clicked(saveCircleLocation);
         showEmployee();
-        userChoosedLocation=false;
+        userChoosedPoly=false;
+        userChoosedCircle=false;
         Intent i= new Intent(getActivity().getBaseContext(),MyService.class);
         getActivity().stopService(i);
         super.onResume();
         //getActivity().stopService(new Intent(getActivity(), MyService.class));
     }
+    boolean userChoosedPoly=false;
 
     MyReceiver myReceiver;
     String[] markersField;
@@ -198,26 +200,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         try {
 
 
-            String point1= String.valueOf(markersLatLng[0].latitude)+"$"+String.valueOf(markersLatLng[0].longitude);
-            String point2= String.valueOf(markersLatLng[1].latitude)+"$"+String.valueOf(markersLatLng[1].longitude);
-            String point3= String.valueOf(markersLatLng[2].latitude)+"$"+String.valueOf(markersLatLng[2].longitude);
-            String point4= String.valueOf(markersLatLng[3].latitude)+"$"+String.valueOf(markersLatLng[3].longitude);
+            if (userChoosedPoly) {
+                String point1 = String.valueOf(markersLatLng[0].latitude) + "$" + String.valueOf(markersLatLng[0].longitude);
+                String point2 = String.valueOf(markersLatLng[1].latitude) + "$" + String.valueOf(markersLatLng[1].longitude);
+                String point3 = String.valueOf(markersLatLng[2].latitude) + "$" + String.valueOf(markersLatLng[2].longitude);
+                String point4 = String.valueOf(markersLatLng[3].latitude) + "$" + String.valueOf(markersLatLng[3].longitude);
 
-            String allPoints=point1+"*"+point2+"*"+point3+"*"+point4;
+                String allPoints = point1 + "*" + point2 + "*" + point3 + "*" + point4;
 
 
-            myReceiver = new MyReceiver();
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(MyService.MY_ACTION);
-            mContext.registerReceiver(myReceiver, intentFilter);
-            Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
-            intent.putExtra("INIT_DATA", allPoints);
-            getActivity().startService(intent);
+                myReceiver = new MyReceiver();
+                IntentFilter intentFilter = new IntentFilter();
+                intentFilter.addAction(MyService.MY_ACTION);
+                mContext.registerReceiver(myReceiver, intentFilter);
+                Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
+                intent.putExtra("INIT_DATA", allPoints);
+                getActivity().startService(intent);
 
-            mContext.unregisterReceiver(myReceiver);
+                mContext.unregisterReceiver(myReceiver);
+            }
             Intent i = new Intent(mContext,MyService.class);
-            if (userChoosedLocation==true){ // start the service only if the user choosed a location
-            //    getActivity().startService(i);
+            if (userChoosedCircle==true){ // start the service only if the user choosed a location
+               getActivity().startService(i);
             }
         }catch (Exception e)
         {
@@ -323,7 +327,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 enough=false;
                 if (p==true)
                 {
-                    userChoosedLocation=true;
+                    userChoosedPoly=true;
 
                     if (circleMarker==true||(markers.size()==POLYGON_POINTS)) {
                         removeEveryThing();
@@ -336,7 +340,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 }
                 else if (c==true)
                 {
-                    userChoosedLocation=true;
+                    userChoosedCircle=true;
                     removeEveryThing();
                     clicked(latLng);
                     appendFile(latLng,"circle.txt"); // store latlng of circle to read it from service in background
@@ -575,7 +579,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         }catch (Exception e)
         {
             e.printStackTrace();
-            Log.e("Error : ",e.getMessage());
+            Log.e("Error 2: ",e.getMessage());
             //Toast.makeText(getActivity(), "ERRRRORRRRR: " +e.toString(), Toast.LENGTH_SHORT).show();
         }
     }

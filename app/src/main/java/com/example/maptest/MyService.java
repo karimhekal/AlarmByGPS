@@ -107,7 +107,7 @@ public class MyService extends Service {
         super.onCreate();
         showEmployee();
         vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
-
+        Toast.makeText(MyService.this, "service started", Toast.LENGTH_SHORT).show();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         showNotification("We're Monitoring your location","You havent arrived yet");
 //        if (Build.VERSION.SDK_INT >= 26) {
@@ -117,7 +117,7 @@ public class MyService extends Service {
 //                    NotificationManager.IMPORTANCE_DEFAULT);
 //            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
 //            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-//                    .setContentTitle("").setContentText("").build();
+//                    .setContentTitle("wwwwwwwwwwwwww").setContentText("").build();
 //            startForeground(1, notification);
 //        }
     }
@@ -128,7 +128,7 @@ public class MyService extends Service {
     String[] thirdPoint;
     String[] fourthPoint;
     boolean workingOnPolygon=false;
-
+    boolean workingOnCircle=false;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
@@ -143,14 +143,16 @@ public class MyService extends Service {
                 secondPoint = pointsArray[1].split("\\$");
                 thirdPoint = pointsArray[2].split("\\$");
                 fourthPoint = pointsArray[3].split("\\$");
-                workingOnPolygon = true; // assigned true so (onlocationresult) checks what shape to listen to
-               double p1[]= convertToDouble(firstPoint);
+
+                double p1[]= convertToDouble(firstPoint);
                 double p2[]=  convertToDouble(secondPoint);
                 double p3[]=  convertToDouble(thirdPoint);
                 double p4[]=   convertToDouble(fourthPoint);
-
-
                 fillLatLng(p1,p2,p3,p4);
+                workingOnPolygon = true; // assigned true so (onlocationresult) checks what shape to listen to
+            }
+            else {
+                workingOnCircle=true;
             }
         }catch (Exception e)
         {
@@ -159,7 +161,7 @@ public class MyService extends Service {
 
 
 
-        Log.e("Point 1 : ", String.valueOf(secondPoint.length));
+
         getLocation();
         showEmployee();
         return START_NOT_STICKY;
@@ -212,7 +214,7 @@ public class MyService extends Service {
                         vibrator.vibrate(pattern,0);
                         enough=true;
                         Toast.makeText(MyService.this, "Youve arrived", Toast.LENGTH_SHORT).show();
-                      //  mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+                        //  mFusedLocationClient.removeLocationUpdates(mLocationCallback);
                         Toast.makeText(MyService.this, "click on notification to confirm", Toast.LENGTH_SHORT).show();
                         final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() {
@@ -222,14 +224,14 @@ public class MyService extends Service {
                                 stopSelf();
                             }
                         }, 5000);
-//as
+
                     }
-                    else { // user outside the polygon
+                    else { // user  outside the polygon
                         Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
                     }
 
                 }
-                else{
+                else{ //this means we're working on circle
                     if (distance[0] <= dradius) {
                         showNotification("You Arrived","Mabrook");
                         final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
