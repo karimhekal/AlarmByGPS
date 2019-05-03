@@ -129,7 +129,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             Log.e("readFromFile", e.toString());
         }
     }
-
+//s
 
 
     @Override
