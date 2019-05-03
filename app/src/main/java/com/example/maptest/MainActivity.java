@@ -45,9 +45,6 @@ public class MainActivity extends FragmentActivity {
 
 
 
-            File file = new File(path+"circle.txt");
-            file.delete();
-
             setContentView(R.layout.activity_main);
 
             i= new Intent(getBaseContext(),MyService.class);
