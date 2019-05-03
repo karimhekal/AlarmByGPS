@@ -26,7 +26,7 @@ import java.util.List;
 
 public class MainActivity extends FragmentActivity {
     MapFragment mapFragment;
-
+//s
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
