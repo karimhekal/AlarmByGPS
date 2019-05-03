@@ -15,7 +15,11 @@ import android.widget.AdapterView;
 public class ExampleDialog extends AppCompatDialogFragment {
     private boolean ok=false;
     Vibrator vibrator;
+
+
     @Override
+
+
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
@@ -43,7 +47,7 @@ public class ExampleDialog extends AppCompatDialogFragment {
         }).setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                 }
+            }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {

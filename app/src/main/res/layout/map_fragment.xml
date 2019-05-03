@@ -62,7 +62,14 @@
     </LinearLayout>
 
 
+<TextView
+    android:layout_width="wrap_content"
+    android:id="@+id/make_sure"
+    android:textSize="13dp"
+    android:visibility="gone"
 
+    android:text="Make sure you draw in clock wise 'ma3 3a2areb elsa3a'"
+    android:layout_height="wrap_content" />
     <com.google.android.gms.maps.MapView
         android:layout_width="match_parent"
         android:outlineAmbientShadowColor="@color/colorPrimaryDark"

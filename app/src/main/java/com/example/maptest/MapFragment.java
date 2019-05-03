@@ -94,7 +94,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
     @Override
     public void onResume() {
-        clicked(saveCircleLocation);
+        //clicked(saveCircleLocation);
         userChoosedPoly=false;
         userChoosedCircle=false;
         Intent i= new Intent(getActivity().getApplicationContext(),MyService.class);
@@ -119,16 +119,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 String point3 = String.valueOf(markersLatLng[2].latitude) + "$" + String.valueOf(markersLatLng[2].longitude);
                 String point4 = String.valueOf(markersLatLng[3].latitude) + "$" + String.valueOf(markersLatLng[3].longitude);
 
-                String allPoints = point1 + "*" + point2 + "*" + point3 + "*" + point4; //putting * between them so i can split the points in the service
+                String allPoints = point1 + "*" + point2 + "*" + point3 + "*" + point4; // seperating them by * so i can split the points in the service
                 // now "allPoints" contains all data of the 4 points , it will be sent as an intent to the service
                 myReceiver = new MyReceiver();
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(MyService.MY_ACTION);
                 mContext.registerReceiver(myReceiver, intentFilter);
                 Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
-                intent.putExtra("DATA", allPoints); //allpoints contains all data of 4 points
+                intent.putExtra("DATA", allPoints); //allpoints contains all data of 4 points seperated by * , and the latlng of every point is seperated by $
                 getActivity().startForegroundService(intent);
-
                 mContext.unregisterReceiver(myReceiver);
             }
             Intent i = new Intent(mContext,MyService.class);
@@ -372,7 +371,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
         }catch (Exception e)
         {
-            Log.e("Error : ",e.toString());
+            Log.e("Error 1: ",e.toString());
         }
     }
 
@@ -440,7 +439,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 LatLng ll=new LatLng(location.getLatitude(),location.getLongitude());
                 update=CameraUpdateFactory.newLatLngZoom(ll,15); // update my location every 1 second
                 float[] distance = new float[2]; // to calculate distance between user and circle
-                if (circleMarker) {// to make sure that we're using the circle not polygon
+                if (circleMarker&&circle!=null) {// to make sure that we're using the circle not polygon
                     Location.distanceBetween(location.getLatitude(), location.getLongitude(), circle.getCenter().latitude, circle.getCenter().longitude, distance);
                     if (distance[0] <= circle.getRadius()) {
                         if (!enough) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
@@ -485,7 +484,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     private void openDialog() {
         ExampleDialog exampleDialog=new ExampleDialog();
         exampleDialog.show(getFragmentManager(),"Example dialog");
-
+        exampleDialog.setCancelable(true);
     }
 
     @Override
