@@ -124,7 +124,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 intentFilter.addAction(MyService.MY_ACTION);
                 mContext.registerReceiver(myReceiver, intentFilter);
                 Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
-                intent.putExtra("DATA", allPoints);
+                intent.putExtra("DATA", allPoints); //allpoints contains all data of 4 points
                 getActivity().startService(intent);
 
                 mContext.unregisterReceiver(myReceiver);
