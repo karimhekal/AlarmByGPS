@@ -111,8 +111,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         vibrator.cancel();
         try {
 
-
-            if (userChoosedPoly) {
+            if (userChoosedPoly) { //start the service only if user checked polygon
                 String point1 = String.valueOf(markersLatLng[0].latitude) + "$" + String.valueOf(markersLatLng[0].longitude);
                 String point2 = String.valueOf(markersLatLng[1].latitude) + "$" + String.valueOf(markersLatLng[1].longitude);
                 String point3 = String.valueOf(markersLatLng[2].latitude) + "$" + String.valueOf(markersLatLng[2].longitude);
@@ -132,7 +131,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             }
             Intent i = new Intent(mContext,MyService.class);
             if (userChoosedCircle){ // start the service only if the user choosed a location
-
 
                 String circleLat= String.valueOf(saveCircleLocation.latitude);
                 String circleLng = String.valueOf(saveCircleLocation.longitude);

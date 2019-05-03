@@ -151,7 +151,6 @@ public class MyService extends Service {
                 secondPoint = pointsArray[1].split("\\$");
                 thirdPoint = pointsArray[2].split("\\$");
                 fourthPoint = pointsArray[3].split("\\$");
-
                 double p1[]= convertToDouble(firstPoint);
                 double p2[]=  convertToDouble(secondPoint);
                 double p3[]=  convertToDouble(thirdPoint);
