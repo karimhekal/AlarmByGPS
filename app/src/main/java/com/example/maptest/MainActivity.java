@@ -30,17 +30,13 @@ public class MainActivity extends FragmentActivity {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-    Intent i;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
             setContentView(R.layout.activity_main);
-            i= new Intent(getBaseContext(),MyService.class);
             mapFragment = new MapFragment();
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_place, mapFragment);
-            stopService(i);
-
         }catch (Exception e)
         {
             Log.e(" : ", e.toString());
@@ -49,7 +45,6 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        stopService(i);
     }
     @Override
     protected void onPause() {
