@@ -64,8 +64,8 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
     private static final String TAG = "LocationService";
     boolean enough=false;
     private FusedLocationProviderClient mFusedLocationClient;
-    private final static long UPDATE_INTERVAL = 500;  /* 4 secs */
-    private final static long FASTEST_INTERVAL = 200; /* 2 sec */
+    private final static long UPDATE_INTERVAL = 4000;  /* 4 secs */
+    private final static long FASTEST_INTERVAL = 2000; /* 2 sec */
 
 
     @Nullable
@@ -118,45 +118,36 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
     @Override
     public void onCreate() {
         super.onCreate();
-        //  showEmployee();
         vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
         Toast.makeText(MyService.this, "service started", Toast.LENGTH_SHORT).show();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         showNotification("We're Monitoring your location","You havent arrived yet");
-        if (Build.VERSION.SDK_INT >= 26) { // this notificatinos to inform user that service is running .. this also prevents system to kill the service because of background limitations
+        if (Build.VERSION.SDK_INT >= 26) { // this notificatinos to inform user that service is running .. this also prevents system from killing the service because of background limitations
             String CHANNEL_ID = "my_channel_01";
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     "My Channel",
                     NotificationManager.IMPORTANCE_DEFAULT);
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("wwwwwwwwwwwwww").setContentText("").build();
+                    .setContentTitle("wwwwwwwwwwwwww").setContentText("We're monitoring your location").build();
             startForeground(1, notification);
         }
     }
 
-    double circleLat,circleLng,circleRadius;
-    String[] circleArray;
-    String[] pointsArray;
+    double circleLat,circleLng,circleRadius; // to store circle position that came from intent
+    String[] circleArray; // to split the incoming circle position from intent and store them in it
+    String[] pointsArray; // to split "allpoints" array and store the points positions in the arrays below
     String[] firstPoint;
     String[] secondPoint;
     String[] thirdPoint;
     String[] fourthPoint;
-    String circleData;
-    boolean workingOnPolygon=false;
-    boolean workingOnCircle;
 
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-        //startService(new Intent(MyService.this, MyService.class));
-        Toast.makeText(MyService.this, "TASK REMOVVVVVEEEEEEEEEEEEDD", Toast.LENGTH_LONG).show();
-    }
+    boolean workingOnPolygon=false; // these boolean's job is to check if we're working on poly or circle
+    boolean workingOnCircle=false;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
-
             markersLatlng = new LatLng[4];
             Log.e(TAG, "onStartCommand: called.");
             initData = intent.getStringExtra("DATA");
@@ -171,7 +162,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
                 double p2[]=  convertToDouble(secondPoint);
                 double p3[]=  convertToDouble(thirdPoint);
                 double p4[]=   convertToDouble(fourthPoint);
-                fillLatLng(p1,p2,p3,p4);
+                fillLatLng(p1,p2,p3,p4); // assigning all these points in one array to calculate that array in the "ray casting algorithm"
                 workingOnPolygon = true; // assigned true so (onlocationresult) checks what shape to listen to
                 Toast.makeText(this, "poly data", Toast.LENGTH_SHORT).show();
                 Log.e("Working on : ","POLYGON");
