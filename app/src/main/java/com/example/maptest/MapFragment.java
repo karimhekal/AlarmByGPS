@@ -61,7 +61,7 @@ import java.util.List;
 public class MapFragment extends Fragment implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     Circle circle;
-    ArrayList<Marker> markers= new ArrayList<Marker>();
+    ArrayList<Marker> markers= new ArrayList<>();
 
     static final int POLYGON_POINTS=4;
     Polygon shape;
@@ -133,11 +133,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             Intent i = new Intent(mContext,MyService.class);
             if (userChoosedCircle){ // start the service only if the user choosed a location
 
-                String circleLat=new String();
-                String circleLng=new String();
 
-                circleLat= String.valueOf(saveCircleLocation.latitude);
-                circleLng = String.valueOf(saveCircleLocation.longitude);
+                String circleLat= String.valueOf(saveCircleLocation.latitude);
+                String circleLng = String.valueOf(saveCircleLocation.longitude);
                 String circleRadius= String.valueOf(radius);
                 myReceiver = new MyReceiver();
                 IntentFilter intentFilter = new IntentFilter();
@@ -168,7 +166,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         polygonRadio=mView.findViewById(R.id.polygon);
         circleRadio=mView.findViewById(R.id.circle);
         enough=false;
-
         clearMarkers.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -213,9 +210,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         try {
-            //  getActivity().stopService(new Intent(getActivity(), MyService.class));
-
-            mMapView = (MapView) mView.findViewById(R.id.map);
+            mMapView = mView.findViewById(R.id.map);
             if (mMapView != null) {
                 mMapView.onCreate(null);
                 mMapView.onResume();
@@ -252,7 +247,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 {
                     userChoosedPoly=true;
 
-                    if (circleMarker==true||(markers.size()==POLYGON_POINTS)) {
+                    if (circleMarker||(markers.size()==POLYGON_POINTS)) {
                         removeEveryThing();
                         circleMarker=false;
                     }
@@ -369,13 +364,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         try {
             circleMarker = true;
             circle = drawCircle(latLng);
-            Geocoder gc = new Geocoder(mContext);
-            List<Address> list = null;
-            try {
-                list = gc.getFromLocation(latLng.latitude, latLng.longitude, 1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
             if (marker != null) {
                 marker.remove();
             }
@@ -516,17 +505,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         int h=0;
         while (h<vertices.length-1)
         {
-            if ((rayCastIntersect(tap, vertices[h], vertices[h + 1]))==true) { //rayCastIntersect(tap, vertices[h], vertices[h + 1])
+            if ((rayCastIntersect(tap, vertices[h], vertices[h + 1]))) { //rayCastIntersect(tap, vertices[h], vertices[h + 1])
                 intersectCount++;
             }
             h++;
         }
-        for (int s=0;s<4;s++)
-        {
-            // Toast.makeText(mContext, "asdasd", Toast.LENGTH_SHORT).show();
-        }
-
-
 
         return ((intersectCount % 2) == 1); // odd = inside, even = outside;
 
