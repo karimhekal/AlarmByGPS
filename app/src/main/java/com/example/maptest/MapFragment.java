@@ -1,6 +1,7 @@
 package com.example.maptest;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -105,6 +106,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     MyReceiver myReceiver;
     String[] markersField;
 
+    @TargetApi(Build.VERSION_CODES.O)
     @Override
     public void onPause() {
         super.onPause();
@@ -125,7 +127,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 mContext.registerReceiver(myReceiver, intentFilter);
                 Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
                 intent.putExtra("DATA", allPoints); //allpoints contains all data of 4 points
-                getActivity().startService(intent);
+                getActivity().startForegroundService(intent);
 
                 mContext.unregisterReceiver(myReceiver);
             }
@@ -141,7 +143,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 mContext.registerReceiver(myReceiver, intentFilter);
                 Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
                 intent.putExtra("DATA", circleLat+"#"+circleLng+"#"+circleRadius); // putting $ between them so i can split them in the service and use them
-                getActivity().startService(intent);
+                getActivity().startForegroundService(intent);
                 mContext.unregisterReceiver(myReceiver);
 
             }
@@ -444,13 +446,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                         if (!enough) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
                             openDialog();
                             //vibrator.vibrate(pattern, 1);
-                            //  Toast.makeText(mContext, "Inside the circle", Toast.LENGTH_SHORT).show();
+                             Toast.makeText(mContext, "Inside the circle", Toast.LENGTH_SHORT).show();
                             enough = true;
                         }
                     }else
                     {
                         enough=false;
-                        //   Toast.makeText(mContext, "Outside", Toast.LENGTH_SHORT).show();
+                          Toast.makeText(mContext, "Outside", Toast.LENGTH_SHORT).show();
                         //outside the circle
                     }
 

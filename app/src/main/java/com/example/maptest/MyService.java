@@ -1,6 +1,7 @@
 package com.example.maptest;
 
 import android.Manifest;
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -31,13 +32,18 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapsInitializer;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -51,21 +57,24 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
-public class MyService extends Service {
+public class MyService extends Service implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     final static String MY_ACTION = "MY_ACTION";
     Vibrator vibrator;
     String initData;
     private static final String TAG = "LocationService";
     boolean enough=false;
     private FusedLocationProviderClient mFusedLocationClient;
-    private final static long UPDATE_INTERVAL = 4 * 1000;  /* 4 secs */
-    private final static long FASTEST_INTERVAL = 2000; /* 2 sec */
+    private final static long UPDATE_INTERVAL = 500;  /* 4 secs */
+    private final static long FASTEST_INTERVAL = 200; /* 2 sec */
+
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+
     boolean shown=false;
 
     private void showNotification(String title,String description) {
@@ -95,6 +104,8 @@ public class MyService extends Service {
     public void onDestroy() {
         super.onDestroy();
         //stopSelf();
+        //startService(new Intent(MyService.this, MyService.class));
+
         Log.e("Service :","Stopped");
 
         Toast.makeText(this, "Service stopped", Toast.LENGTH_SHORT).show();
@@ -112,16 +123,16 @@ public class MyService extends Service {
         Toast.makeText(MyService.this, "service started", Toast.LENGTH_SHORT).show();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         showNotification("We're Monitoring your location","You havent arrived yet");
-//        if (Build.VERSION.SDK_INT >= 26) {
-//            String CHANNEL_ID = "my_channel_01";
-//            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-//                    "My Channel",
-//                    NotificationManager.IMPORTANCE_DEFAULT);
-//            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
-//            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-//                    .setContentTitle("wwwwwwwwwwwwww").setContentText("").build();
-//            startForeground(1, notification);
-//        }
+        if (Build.VERSION.SDK_INT >= 26) { // this notificatinos to inform user that service is running .. this also prevents system to kill the service because of background limitations
+            String CHANNEL_ID = "my_channel_01";
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                    "My Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setContentTitle("wwwwwwwwwwwwww").setContentText("").build();
+            startForeground(1, notification);
+        }
     }
 
     double circleLat,circleLng,circleRadius;
@@ -134,9 +145,18 @@ public class MyService extends Service {
     String circleData;
     boolean workingOnPolygon=false;
     boolean workingOnCircle;
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        //startService(new Intent(MyService.this, MyService.class));
+        Toast.makeText(MyService.this, "TASK REMOVVVVVEEEEEEEEEEEEDD", Toast.LENGTH_LONG).show();
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
+
             markersLatlng = new LatLng[4];
             Log.e(TAG, "onStartCommand: called.");
             initData = intent.getStringExtra("DATA");
@@ -176,7 +196,7 @@ public class MyService extends Service {
 
         getLocation();
         //   showEmployee();
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
     private void openDialog() {
 
@@ -202,73 +222,81 @@ public class MyService extends Service {
     }
 
     LocationCallback mLocationCallback = new LocationCallback() {
+
+Boolean breaktheloop=false;
         @Override
         public void onLocationResult(LocationResult locationResult) {
-            Log.e(TAG, "onLocationResult: got location result.");
-            if (locationResult==null){
-                Toast.makeText(MyService.this, "can't get current location", Toast.LENGTH_SHORT).show();
-            }
-            else {
-                LatLng ll=new LatLng(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude());
-                float[] distance = new float[2]; // to calculate distance between user and circle
-                Location.distanceBetween(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude(), circleLat, circleLng, distance);
-
-                if (workingOnPolygon) // we're checking for Polygon
-                {
-                    LatLng locLatlng = new LatLng(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
-                    if (isPointInPolygon(locLatlng, markersLatlng)) // inside the polygon
-                    {
-                        showNotification("You Arrived","Mabrook");
-                        final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
-                        mp.start();
-                        final long[] pattern={250,350};
-                        vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
-                        vibrator.vibrate(pattern,0);
-                        enough=true;
-                        Toast.makeText(MyService.this, "Youve arrived", Toast.LENGTH_SHORT).show();
-                        //  mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-                        Toast.makeText(MyService.this, "click on notification to confirm", Toast.LENGTH_SHORT).show();
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-                                stopSelf();
-                            }
-                        }, 4000);
-
-                    }
-                    else { // user  outside the polygon
-                        Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
-                    }
-
+               Log.e(TAG, "onLocationResult: got location result.");
+                if (locationResult==null){
+                    Toast.makeText(MyService.this, "can't get current location", Toast.LENGTH_SHORT).show();
                 }
-                if (workingOnCircle){ //this means we're working on circle
-                    if (distance[0] <= circleRadius) {
-                        showNotification("You Arrived","Mabrook");
-                        final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
-                        mp.start();
-                        final long[] pattern={250,350};
-                        vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
-                        vibrator.vibrate(pattern, 1);
-                        enough=true;
+                else {
+                    LatLng ll=new LatLng(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude());
+                    float[] distance = new float[2]; // to calculate distance between user and circle
+                    Location.distanceBetween(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude(), circleLat, circleLng, distance);
 
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                stopSelf();
-                            }
-                        }, 3000);
-                        Toast.makeText(MyService.this, "Click on the notification to confirm", Toast.LENGTH_LONG).show();
+                    if (workingOnPolygon) // we're checking for Polygon
+                    {
+                        LatLng locLatlng = new LatLng(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
+                        if (isPointInPolygon(locLatlng, markersLatlng)) // inside the polygon
+                        {
+                            breaktheloop=true;
+                            showNotification("You Arrived","Mabrook");
+                            final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
+                            mp.start();
+                            final long[] pattern={250,350};
+                            vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
+                            vibrator.vibrate(pattern,0);
+                            enough=true;
+                            Toast.makeText(MyService.this, "Youve arrived", Toast.LENGTH_SHORT).show();
+                            //  mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+                            Toast.makeText(MyService.this, "click on notification to confirm", Toast.LENGTH_SHORT).show();
+                            final Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //  mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+                                    stopSelf();
+                                }
+                            }, 4000);
 
-                    }else{
-                        //  Toast.makeText(MyService.this, "back : Outside", Toast.LENGTH_SHORT).show();
-                        //outside the circle
-                        Toast.makeText(MyService.this, "OUTSIDEEE", Toast.LENGTH_SHORT).show();
+                        }
+                        else { // user  outside the polygon
+                            Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
+                        }
+
                     }
-                }}
-        }
+                    if (workingOnCircle){ //this means we're working on circle
+
+                        Toast.makeText(MyService.this, "Distance : "+distance, Toast.LENGTH_SHORT).show();
+                        if (distance[0] <= circleRadius) {
+                            breaktheloop=true;
+
+                            showNotification("You Arrived","Mabrook");
+                            final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
+                            mp.start();
+                            final long[] pattern={250,350};
+                            vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
+                            vibrator.vibrate(pattern, 1);
+                            enough=true;
+
+                            final Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    stopSelf();
+                                }
+                            }, 3000);
+                            Toast.makeText(MyService.this, "Click on the notification to confirm", Toast.LENGTH_LONG).show();
+
+                        }else{
+                            //  Toast.makeText(MyService.this, "back : Outside", Toast.LENGTH_SHORT).show();
+                            //outside the circle
+                            Log.e("Still outside",".............................");
+                            Toast.makeText(MyService.this, "OUTSIDEEE", Toast.LENGTH_SHORT).show();
+                        }
+                    }}
+            }
     };
 
     private void getLocation() {
@@ -284,6 +312,7 @@ public class MyService extends Service {
             // stopSelf();
             return;
         }
+
         Log.e(TAG, "getLocation: getting location information.");
         mFusedLocationClient.requestLocationUpdates(mLocationRequestHighAccuracy, mLocationCallback,Looper.myLooper()); // Looper.myLooper tells this to repeat forever until thread is destroyed
     }
@@ -329,8 +358,120 @@ public class MyService extends Service {
         return x > pX;
     }
 
+    LocationRequest mLocationRequest;
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // make accurace to high
+        mLocationRequest.setInterval(1000); // update my location every 1 second
+        if (ActivityCompat.checkSelfPermission(MyService.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MyService.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
+    }
 
+    @Override
+    public void onConnectionSuspended(int i) {
 
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if (location==null){
+            Toast.makeText(MyService.this, "can't get current location", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            LatLng ll=new LatLng(location.getLatitude(),location.getLongitude());
+            float[] distance = new float[2]; // to calculate distance between user and circle
+            Location.distanceBetween(location.getLatitude(), location.getLongitude(), circleLat, circleLng, distance);
+
+            if (workingOnPolygon) // we're checking for Polygon
+            {
+                LatLng locLatlng = new LatLng(location.getLatitude(), location.getLongitude());
+                if (isPointInPolygon(locLatlng, markersLatlng)) // inside the polygon
+                {
+                  //  breaktheloop=true;
+                    showNotification("You Arrived","Mabrook");
+                    final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
+                    mp.start();
+                    final long[] pattern={250,350};
+                    vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
+                    vibrator.vibrate(pattern,0);
+                    enough=true;
+                    Toast.makeText(MyService.this, "Youve arrived", Toast.LENGTH_SHORT).show();
+                    //  mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+                    Toast.makeText(MyService.this, "click on notification to confirm", Toast.LENGTH_SHORT).show();
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            //  mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+                            stopSelf();
+                        }
+                    }, 4000);
+
+                }
+                else { // user  outside the polygon
+                    Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+            if (workingOnCircle){ //this means we're working on circle
+
+                Toast.makeText(MyService.this, "Distance : "+distance, Toast.LENGTH_SHORT).show();
+                if (distance[0] <= circleRadius) {
+                   // breaktheloop=true;
+
+                    showNotification("You Arrived","Mabrook");
+                    final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
+                    mp.start();
+                    final long[] pattern={250,350};
+                    vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
+                    vibrator.vibrate(pattern, 1);
+                    enough=true;
+
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            stopSelf();
+                        }
+                    }, 3000);
+                    Toast.makeText(MyService.this, "Click on the notification to confirm", Toast.LENGTH_LONG).show();
+
+                }else{
+                    //  Toast.makeText(MyService.this, "back : Outside", Toast.LENGTH_SHORT).show();
+                    //outside the circle
+                    Toast.makeText(MyService.this, "OUTSIDEEE", Toast.LENGTH_SHORT).show();
+                }
+            }}
+    }
+
+    GoogleApiClient mGoogleApiClient;
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        MapsInitializer.initialize(MyService.this);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(MyService.this).addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        mGoogleApiClient.connect();
+
+    }
 }

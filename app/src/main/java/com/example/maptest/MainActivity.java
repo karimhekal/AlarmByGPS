@@ -28,6 +28,14 @@ public class MainActivity extends FragmentActivity { //extend fragment activity 
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
+    @Override
+    protected void onDestroy() {
+
+        super.onDestroy();
+        Log.e("Main : ","Destroyed");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
