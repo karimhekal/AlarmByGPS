@@ -176,7 +176,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     }
 
 
-
+//s
     @Override
     public void onResume() {
         clicked(saveCircleLocation);

@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.widget.Toast;
 
 public class MyReceiver extends BroadcastReceiver {
-
+//d
 
     @Override
     public void onReceive(Context context, Intent intent) {
