@@ -292,7 +292,7 @@ public class MyService extends Service {
         Log.e(TAG, "getLocation: getting location information.");
         mFusedLocationClient.requestLocationUpdates(mLocationRequestHighAccuracy, mLocationCallback,Looper.myLooper()); // Looper.myLooper tells this to repeat forever until thread is destroyed
     }
-
+//s
 
 
 

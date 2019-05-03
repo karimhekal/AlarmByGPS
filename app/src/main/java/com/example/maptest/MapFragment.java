@@ -130,51 +130,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         }
     }
 
-    private void appendFile(LatLng latLng,String fileName) {
-        File file = new File(path+fileName);
-        try {
-            if (!file.exists())
-                file.createNewFile();
-            // file.delete();
-            file.createNewFile();
-            FileOutputStream fileOutputStream =new FileOutputStream(file);
-            if (latLng !=null) {
-                try {
-                    Log.e("radius : ", String.valueOf(circle.getRadius()));
-                    fileOutputStream.write((circle.getRadius() + "$" + latLng.latitude + "$" + latLng.longitude + System.getProperty("line.separator")).getBytes());
-                }catch (Exception e )
-                {
-                    e.printStackTrace();
-                }
-            }} catch (IOException e) {
-            Toast.makeText(mContext,e.getMessage(),Toast.LENGTH_LONG).show();
-        }
-    }
-
-
-
-
-    private void appendFile(LatLng[] latLng,String fileName) { //to append polygon which is an array of latlng
-        File file = new File(path+fileName);
-        try {
-            if (!file.exists())
-                file.createNewFile();
-            // file.delete();
-            file.createNewFile();
-            FileOutputStream fileOutputStream =new FileOutputStream(file,true);
-            if (latLng !=null) {
-                try {
-                    //Log.e("radius : ", String.valueOf(circle.getRadius()));
-                    //  fileOutputStream.write(latLng[i].+  System.getProperty("line.separator")).getBytes());
-                }catch (Exception e )
-                {
-                    e.printStackTrace();
-                }
-            }} catch (IOException e) {
-            Toast.makeText(mContext,e.getMessage(),Toast.LENGTH_LONG).show();
-        }
-    }
-
 
 
     @Override
@@ -337,7 +292,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             @Override
             public void onMapClick(LatLng latLng) {
                 saveCircleLocation=latLng;
-                appendFile(latLng,"circleLocation.txt");
+              //  appendFile(latLng,"circleLocation.txt");
                 enough=false;
                 if (p==true)
                 {
@@ -349,7 +304,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                     }
                     if (markers.size()!=POLYGON_POINTS) {
                         polyClicked(latLng);
-                        appendFile(latLng, "polygon.txt"); // ellatlng elmafrod ykon array , 3addelha ba3deen bas da makan elfunction 3ashan ne store el 4 points of polygon which is an array
+                //        appendFile(latLng, "polygon.txt"); // ellatlng elmafrod ykon array , 3addelha ba3deen bas da makan elfunction 3ashan ne store el 4 points of polygon which is an array
                     }
                 }
                 else if (c==true)
@@ -357,7 +312,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                     userChoosedCircle=true;
                     removeEveryThing();
                     clicked(latLng);
-                    appendFile(latLng,"circle.txt"); // store latlng of circle to read it from service in background
+         //           appendFile(latLng,"circle.txt"); // store latlng of circle to read it from service in background
 
 
                 }
