@@ -153,8 +153,8 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
             initData = intent.getStringExtra("DATA");
             Log.e("SERVICE INTENT : ", initData);
             if (initData.contains("*")) {
-                pointsArray = initData.split("\\*");
-                firstPoint = pointsArray[0].split("\\$");
+                pointsArray = initData.split("\\*"); // this line splits all points from each other
+                firstPoint = pointsArray[0].split("\\$"); //index 0 contains lat$lng of first point , same goes for the points below
                 secondPoint = pointsArray[1].split("\\$");
                 thirdPoint = pointsArray[2].split("\\$");
                 fourthPoint = pointsArray[3].split("\\$");
@@ -164,16 +164,15 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
                 double p4[]=   convertToDouble(fourthPoint);
                 fillLatLng(p1,p2,p3,p4); // assigning all these points in one array to calculate that array in the "ray casting algorithm"
                 workingOnPolygon = true; // assigned true so (onlocationresult) checks what shape to listen to
-                Toast.makeText(this, "poly data", Toast.LENGTH_SHORT).show();
                 Log.e("Working on : ","POLYGON");
             }
-            if (initData.contains("#")) {
+            if (initData.contains("#")) { // check if the incoming intent contains # , that means it's a circle
                 Toast.makeText(this, "circle data passed", Toast.LENGTH_SHORT).show();
-                circleArray = initData.split("\\#");
+                circleArray = initData.split("\\#"); // splitting Lat from lng from radius ; example : 563218#654865#53128 , this line removes "#" and assign the remaining values to the array
                 circleLat= Double.parseDouble(circleArray[0]);
                 circleLng= Double.parseDouble(circleArray[1]);
                 circleRadius= Double.parseDouble(circleArray[2]);
-                Log.e("circle lat : ","Working on circle");
+                Log.e("Working on : ","circle");
 
                 workingOnCircle=true;
             }
