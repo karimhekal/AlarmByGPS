@@ -72,7 +72,7 @@ public class MainActivity extends FragmentActivity {
 
     @Override
     protected void onPause() {
-
+//s
         super.onPause();
     }
 //    public void geoLocate(View view) throws IOException {
