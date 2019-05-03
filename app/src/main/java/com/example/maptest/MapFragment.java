@@ -176,7 +176,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     }
 
 
-//s
+
     @Override
     public void onResume() {
         clicked(saveCircleLocation);
@@ -208,20 +208,34 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
                 String allPoints = point1 + "*" + point2 + "*" + point3 + "*" + point4;
 
-
                 myReceiver = new MyReceiver();
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(MyService.MY_ACTION);
                 mContext.registerReceiver(myReceiver, intentFilter);
                 Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
-                intent.putExtra("INIT_DATA", allPoints);
+                intent.putExtra("POLYGON_DATA", allPoints);
                 getActivity().startService(intent);
 
                 mContext.unregisterReceiver(myReceiver);
             }
             Intent i = new Intent(mContext,MyService.class);
             if (userChoosedCircle==true){ // start the service only if the user choosed a location
-               getActivity().startService(i);
+
+                String circleLat=new String();
+                String circleLng=new String();
+
+                circleLat= String.valueOf(saveCircleLocation.latitude);
+                circleLng = String.valueOf(saveCircleLocation.longitude);
+                String circleRadius= String.valueOf(radius);
+                myReceiver = new MyReceiver();
+                IntentFilter intentFilter = new IntentFilter();
+                intentFilter.addAction(MyService.MY_ACTION);
+                mContext.registerReceiver(myReceiver, intentFilter);
+                Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
+                intent.putExtra("POLYGON_DATA", circleLat+"#"+circleLng+"#"+circleRadius); // putting $ between them so i can split them in the service and use them
+                getActivity().startService(intent);
+                mContext.unregisterReceiver(myReceiver);
+
             }
         }catch (Exception e)
         {

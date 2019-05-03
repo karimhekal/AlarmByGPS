@@ -94,7 +94,9 @@ public class MyService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        stopSelf();
+        //stopSelf();
+        Log.e("Service :","Stopped");
+
         Toast.makeText(this, "Service stopped", Toast.LENGTH_SHORT).show();
         vibrator.cancel();
         if (mFusedLocationClient != null) {
@@ -105,7 +107,7 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        showEmployee();
+        //  showEmployee();
         vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
         Toast.makeText(MyService.this, "service started", Toast.LENGTH_SHORT).show();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -122,22 +124,28 @@ public class MyService extends Service {
 //        }
     }
 
+    double circleLat,circleLng,circleRadius;
+    String[] circleArray;
     String[] pointsArray;
     String[] firstPoint;
     String[] secondPoint;
     String[] thirdPoint;
     String[] fourthPoint;
+    String circleData;
     boolean workingOnPolygon=false;
-    boolean workingOnCircle=false;
+    boolean workingOnCircle;
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             markersLatlng = new LatLng[4];
             Log.e(TAG, "onStartCommand: called.");
 
-            initData = intent.getStringExtra("INIT_DATA");
+            initData = intent.getStringExtra("POLYGON_DATA");
+            //circleData = intent.getStringExtra("POLYGON_DATA");
+            //       Log.e("circle data : ",circleData);
+
             Log.e("SERVICE INTENT : ", initData);
-            if (initData != null) {
+            if (initData.contains("*")) {
                 pointsArray = initData.split("\\*");
                 firstPoint = pointsArray[0].split("\\$");
                 secondPoint = pointsArray[1].split("\\$");
@@ -150,20 +158,29 @@ public class MyService extends Service {
                 double p4[]=   convertToDouble(fourthPoint);
                 fillLatLng(p1,p2,p3,p4);
                 workingOnPolygon = true; // assigned true so (onlocationresult) checks what shape to listen to
+                Toast.makeText(this, "poly data", Toast.LENGTH_SHORT).show();
+                Log.e("Working on : ","POLYGON");
             }
-            else {
+            if (initData.contains("#")) {
+                Toast.makeText(this, "circle data passed", Toast.LENGTH_SHORT).show();
+                circleArray = initData.split("\\#");
+                circleLat= Double.parseDouble(circleArray[0]);
+                circleLng= Double.parseDouble(circleArray[1]);
+                circleRadius= Double.parseDouble(circleArray[2]);
+                Log.e("circle lat : ","Working on circle");
+
                 workingOnCircle=true;
             }
         }catch (Exception e)
         {
-            Log.e("onstartCommand ", e.toString());
+            Log.e("Error : onstartCommand ", e.toString());
         }
 
 
 
 
         getLocation();
-        showEmployee();
+        //   showEmployee();
         return START_NOT_STICKY;
     }
     private void openDialog() {
@@ -199,9 +216,9 @@ public class MyService extends Service {
             else {
                 LatLng ll=new LatLng(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude());
                 float[] distance = new float[2]; // to calculate distance between user and circle
-                Location.distanceBetween(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude(), dlat, dlong, distance);
+                Location.distanceBetween(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude(), circleLat, circleLng, distance);
 
-                if (workingOnPolygon==true) // we're checking for Polygon
+                if (workingOnPolygon) // we're checking for Polygon
                 {
                     LatLng locLatlng = new LatLng(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
                     if (isPointInPolygon(locLatlng, markersLatlng)) // inside the polygon
@@ -231,8 +248,8 @@ public class MyService extends Service {
                     }
 
                 }
-                else{ //this means we're working on circle
-                    if (distance[0] <= dradius) {
+                if (workingOnCircle){ //this means we're working on circle
+                    if (distance[0] <= circleRadius) {
                         showNotification("You Arrived","Mabrook");
                         final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
                         mp.start();
@@ -240,20 +257,20 @@ public class MyService extends Service {
                         vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
                         vibrator.vibrate(pattern, 1);
                         enough=true;
-                        File file = new File(path+"circle.txt");
-                        file.delete();
-//                    final Handler handler = new Handler();
-//                    handler.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            System.exit(0);
-//                        }
-//                    }, 3000);
+
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                stopSelf();
+                            }
+                        }, 3000);
                         Toast.makeText(MyService.this, "Click on the notification to confirm", Toast.LENGTH_LONG).show();
-                        stopSelf();
+
                     }else{
                         //  Toast.makeText(MyService.this, "back : Outside", Toast.LENGTH_SHORT).show();
                         //outside the circle
+                        Toast.makeText(MyService.this, "OUTSIDEEE", Toast.LENGTH_SHORT).show();
                     }
                 }}
         }
@@ -269,49 +286,15 @@ public class MyService extends Service {
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e(TAG, "getLocation: stopping the location service.");
-            stopSelf();
+            // stopSelf();
             return;
         }
         Log.e(TAG, "getLocation: getting location information.");
         mFusedLocationClient.requestLocationUpdates(mLocationRequestHighAccuracy, mLocationCallback,Looper.myLooper()); // Looper.myLooper tells this to repeat forever until thread is destroyed
     }
 
-//s
-    String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/";
-    String line = "";
-    String[] employeeField;
-    double dradius;
-    double dlat ;
-    double dlong;
-    private void showEmployee() {
-        try {
-            FileInputStream fileInputStream = new FileInputStream(new File(path+"circle.txt"));
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
 
-            while ((line = bufferedReader.readLine()) != null) {
-                employeeField = line.split("\\$");
-
-//                lines.add("ID : "+  employeeField[0] + " Name : " + employeeField[1] + " Department : "+employeeField[2]);
-                // Toast.makeText(MyService.this, line, Toast.LENGTH_SHORT).show();
-
-            }
-            String sradius = employeeField[0];
-            String slat=employeeField[1];
-            String slong=employeeField[2];
-
-            dradius = Double.parseDouble(sradius);
-            dlat = Double.parseDouble(slat);
-            dlong = Double.parseDouble(slong);
-            Toast.makeText(this, "Sleep peacefully hhh", Toast.LENGTH_SHORT).show();
-
-            fileInputStream.close();
-            bufferedReader.close();
-        } catch (Exception e) {
-            Log.e("readFromFile", e.toString());
-        }
-    }
 
 
     private boolean isPointInPolygon(LatLng tap, LatLng[] vertices) {
