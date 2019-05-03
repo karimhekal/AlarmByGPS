@@ -240,7 +240,7 @@ public class MyService extends Service {
                                 mFusedLocationClient.removeLocationUpdates(mLocationCallback);
                                 stopSelf();
                             }
-                        }, 5000);
+                        }, 4000);
 
                     }
                     else { // user  outside the polygon

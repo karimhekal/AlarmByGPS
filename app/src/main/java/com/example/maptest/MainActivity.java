@@ -40,5 +40,4 @@ public class MainActivity extends FragmentActivity { //extend fragment activity 
             Log.e("MainActivityOnCreate: ", e.toString());
         }
     }
-
 }

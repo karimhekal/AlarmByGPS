@@ -53,9 +53,6 @@ import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -92,57 +89,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     Button setRadius,clearMarkers;
 
 
-    String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/";
-    String[] employeeField;
-    String line = "";
-    double dradius;
-    double dlat;
-    double dlong;
-    private void showEmployee() {
-        try {
-            FileInputStream fileInputStream = new FileInputStream(new File(path+"circlelocation.txt"));
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-
-            while ((line = bufferedReader.readLine()) != null) {
-                employeeField = line.split("\\$");
-
-//                lines.add("ID : "+  employeeField[0] + " Name : " + employeeField[1] + " Department : "+employeeField[2]);
-                // Toast.makeText(MyService.this, line, Toast.LENGTH_SHORT).show();
-
-            }
-            String sradius = employeeField[0];
-            String slat=employeeField[1];
-            String slong=employeeField[2];
-
-            dradius = Double.parseDouble(sradius);
-            dlat = Double.parseDouble(slat);
-            dlong = Double.parseDouble(slong);
-            LatLng l=new LatLng(dlat,dlong);
-
-            Toast.makeText(mContext, "RESULTTT : "+dradius, Toast.LENGTH_SHORT).show();
-            drawCircle(l);
-            fileInputStream.close();
-            bufferedReader.close();
-        } catch (Exception e) {
-            Log.e("readFromFile", e.toString());
-        }
-    }
-//s
 
 
     @Override
     public void onResume() {
         clicked(saveCircleLocation);
-        showEmployee();
         userChoosedPoly=false;
         userChoosedCircle=false;
-        Intent i= new Intent(getActivity().getBaseContext(),MyService.class);
+        Intent i= new Intent(getActivity().getApplicationContext(),MyService.class);
         getActivity().stopService(i);
         super.onResume();
-        //getActivity().stopService(new Intent(getActivity(), MyService.class));
-    }
+      }
     boolean userChoosedPoly=false;
 
     MyReceiver myReceiver;
@@ -174,7 +131,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 mContext.unregisterReceiver(myReceiver);
             }
             Intent i = new Intent(mContext,MyService.class);
-            if (userChoosedCircle==true){ // start the service only if the user choosed a location
+            if (userChoosedCircle){ // start the service only if the user choosed a location
 
                 String circleLat=new String();
                 String circleLng=new String();
@@ -240,8 +197,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             public void onClick(View view) {
                 try{
                     radius=Integer.valueOf(editText.getText().toString());
-                    magicButton();
-                    mGoogleMap.animateCamera(update);
                 }catch (Exception e){
                     Toast.makeText(mContext, "Configuring", Toast.LENGTH_SHORT).show();
                 }
@@ -292,9 +247,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             @Override
             public void onMapClick(LatLng latLng) {
                 saveCircleLocation=latLng;
-              //  appendFile(latLng,"circleLocation.txt");
                 enough=false;
-                if (p==true)
+                if (p) // "p" means if user checked polygon
                 {
                     userChoosedPoly=true;
 
@@ -304,17 +258,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                     }
                     if (markers.size()!=POLYGON_POINTS) {
                         polyClicked(latLng);
-                //        appendFile(latLng, "polygon.txt"); // ellatlng elmafrod ykon array , 3addelha ba3deen bas da makan elfunction 3ashan ne store el 4 points of polygon which is an array
                     }
                 }
-                else if (c==true)
+                else if (c) // "c" means if user checked circle
                 {
                     userChoosedCircle=true;
                     removeEveryThing();
                     clicked(latLng);
-         //           appendFile(latLng,"circle.txt"); // store latlng of circle to read it from service in background
-
-
                 }
                 else {
                     Toast.makeText(mContext, "Select Circle or Polygon first", Toast.LENGTH_SHORT).show();
@@ -449,29 +399,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     }
 
 
-    private void magicButton() {
-        String location = editText.getText().toString();
-        Geocoder gc = new Geocoder(getContext());
-        List<Address> list = null;
-        try {
-            list = gc.getFromLocationName(location, 1);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Address address = list.get(0);
-        String locality = address.getLocality();
-        //Toast.makeText(mContext, locality, Toast.LENGTH_SHORT).show();
-        double lat = address.getLatitude();
-        double lng = address.getLongitude();
-        goToLocationZoom(lat, lng, 12.5f);
-        //MapsInitializer.initialize(mContext);
-//        if (marker != null) {
-//            marker.remove();
-//        }
-//        marker = mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title(locality).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_launcher)));
-
-    }
-
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
@@ -505,7 +432,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                     LatLng locLatlng = new LatLng(location.getLatitude(), location.getLongitude());
                     if (isPointInPolygon(locLatlng, markersLatLng)) // inside the polygon
                     {
-                        if (en==false) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
+                        if (!en) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
                             openDialog();
                             en = true;
                         }
@@ -524,10 +451,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 LatLng ll=new LatLng(location.getLatitude(),location.getLongitude());
                 update=CameraUpdateFactory.newLatLngZoom(ll,15); // update my location every 1 second
                 float[] distance = new float[2]; // to calculate distance between user and circle
-                if (circleMarker==true) {// to make sure that we're using the circle not polygon
+                if (circleMarker) {// to make sure that we're using the circle not polygon
                     Location.distanceBetween(location.getLatitude(), location.getLongitude(), circle.getCenter().latitude, circle.getCenter().longitude, distance);
                     if (distance[0] <= circle.getRadius()) {
-                        if (enough==false) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
+                        if (!enough) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
                             openDialog();
                             //vibrator.vibrate(pattern, 1);
                             //  Toast.makeText(mContext, "Inside the circle", Toast.LENGTH_SHORT).show();
