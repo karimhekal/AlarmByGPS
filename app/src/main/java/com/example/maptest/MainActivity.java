@@ -21,12 +21,10 @@ import com.google.android.gms.maps.model.LatLng;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends FragmentActivity { //extend fragment activity so i can hide action bar
     MapFragment mapFragment;
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -39,15 +37,8 @@ public class MainActivity extends FragmentActivity {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_place, mapFragment);
         }catch (Exception e)
         {
-            Log.e(" : ", e.toString());
+            Log.e("MainActivityOnCreate: ", e.toString());
         }
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
+
 }
