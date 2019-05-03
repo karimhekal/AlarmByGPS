@@ -112,13 +112,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         try {
 
             if (userChoosedPoly) { //start the service only if user checked polygon
-                String point1 = String.valueOf(markersLatLng[0].latitude) + "$" + String.valueOf(markersLatLng[0].longitude);
+                String point1 = String.valueOf(markersLatLng[0].latitude) + "$" + String.valueOf(markersLatLng[0].longitude); //putting $ between them so i can split the lat and lng in the service
                 String point2 = String.valueOf(markersLatLng[1].latitude) + "$" + String.valueOf(markersLatLng[1].longitude);
                 String point3 = String.valueOf(markersLatLng[2].latitude) + "$" + String.valueOf(markersLatLng[2].longitude);
                 String point4 = String.valueOf(markersLatLng[3].latitude) + "$" + String.valueOf(markersLatLng[3].longitude);
 
-                String allPoints = point1 + "*" + point2 + "*" + point3 + "*" + point4;
-
+                String allPoints = point1 + "*" + point2 + "*" + point3 + "*" + point4; //putting * between them so i can split the points in the service
+                // now "allPoints" contains all data of the 4 points , it will be sent as an intent to the service
                 myReceiver = new MyReceiver();
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(MyService.MY_ACTION);
