@@ -300,20 +300,14 @@ public class MyService extends Service {
     private boolean isPointInPolygon(LatLng tap, LatLng[] vertices) {
 
         int intersectCount = 0;
-        int h=0;
+        int h=0; // for the while loop to increase
         while (h<vertices.length-1)
         {
             if ((rayCastIntersect(tap, vertices[h], vertices[h + 1]))==true) { //rayCastIntersect(tap, vertices[h], vertices[h + 1])
                 intersectCount++;
             }
-            h++;
+            h++; // increasing normal loop
         }
-        for (int s=0;s<4;s++)
-        {
-            // Toast.makeText(mContext, "asdasd", Toast.LENGTH_SHORT).show();
-        }
-
-
 
         return ((intersectCount % 2) == 1); // odd = inside, even = outside;
 
