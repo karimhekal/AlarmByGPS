@@ -174,7 +174,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         polygonRadio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(mContext, "Draw a polygon of 4 lines on map , make sure you draw in clockwise", Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "Draw a shape of 4 points on map, MAKE SURE YOU DRAW IN CLOCKWISE", Toast.LENGTH_LONG).show();
                 p=true;
                 c=false;
             }
