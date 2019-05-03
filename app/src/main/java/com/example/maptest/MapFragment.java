@@ -124,7 +124,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 intentFilter.addAction(MyService.MY_ACTION);
                 mContext.registerReceiver(myReceiver, intentFilter);
                 Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
-                intent.putExtra("POLYGON_DATA", allPoints);
+                intent.putExtra("DATA", allPoints);
                 getActivity().startService(intent);
 
                 mContext.unregisterReceiver(myReceiver);
@@ -140,7 +140,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 intentFilter.addAction(MyService.MY_ACTION);
                 mContext.registerReceiver(myReceiver, intentFilter);
                 Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
-                intent.putExtra("POLYGON_DATA", circleLat+"#"+circleLng+"#"+circleRadius); // putting $ between them so i can split them in the service and use them
+                intent.putExtra("DATA", circleLat+"#"+circleLng+"#"+circleRadius); // putting $ between them so i can split them in the service and use them
                 getActivity().startService(intent);
                 mContext.unregisterReceiver(myReceiver);
 

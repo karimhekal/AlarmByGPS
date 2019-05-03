@@ -139,11 +139,7 @@ public class MyService extends Service {
         try {
             markersLatlng = new LatLng[4];
             Log.e(TAG, "onStartCommand: called.");
-
-            initData = intent.getStringExtra("POLYGON_DATA");
-            //circleData = intent.getStringExtra("POLYGON_DATA");
-            //       Log.e("circle data : ",circleData);
-
+            initData = intent.getStringExtra("DATA");
             Log.e("SERVICE INTENT : ", initData);
             if (initData.contains("*")) {
                 pointsArray = initData.split("\\*");
