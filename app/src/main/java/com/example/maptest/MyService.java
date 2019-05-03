@@ -276,7 +276,7 @@ public class MyService extends Service {
         mFusedLocationClient.requestLocationUpdates(mLocationRequestHighAccuracy, mLocationCallback,Looper.myLooper()); // Looper.myLooper tells this to repeat forever until thread is destroyed
     }
 
-
+//s
     String path = Environment.getExternalStorageDirectory().getAbsolutePath()+"/";
     String line = "";
     String[] employeeField;
