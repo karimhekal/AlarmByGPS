@@ -213,7 +213,6 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
 
     LocationCallback mLocationCallback = new LocationCallback() {
 
-Boolean breaktheloop=false;
         @Override
         public void onLocationResult(LocationResult locationResult) {
                Log.e(TAG, "onLocationResult: got location result.");
@@ -230,7 +229,6 @@ Boolean breaktheloop=false;
                         LatLng locLatlng = new LatLng(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude());
                         if (isPointInPolygon(locLatlng, markersLatlng)) // inside the polygon
                         {
-                            breaktheloop=true;
                             showNotification("You Arrived","Mabrook");
                             final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
                             mp.start();
@@ -260,7 +258,6 @@ Boolean breaktheloop=false;
 
                         Toast.makeText(MyService.this, "Distance : "+distance, Toast.LENGTH_SHORT).show();
                         if (distance[0] <= circleRadius) {
-                            breaktheloop=true;
 
                             showNotification("You Arrived","Mabrook");
                             final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
@@ -394,7 +391,6 @@ Boolean breaktheloop=false;
                 LatLng locLatlng = new LatLng(location.getLatitude(), location.getLongitude());
                 if (isPointInPolygon(locLatlng, markersLatlng)) // inside the polygon
                 {
-                  //  breaktheloop=true;
                     showNotification("You Arrived","Mabrook");
                     final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
                     mp.start();
@@ -424,7 +420,6 @@ Boolean breaktheloop=false;
 
                 Toast.makeText(MyService.this, "Distance : "+distance, Toast.LENGTH_SHORT).show();
                 if (distance[0] <= circleRadius) {
-                   // breaktheloop=true;
 
                     showNotification("You Arrived","Mabrook");
                     final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
