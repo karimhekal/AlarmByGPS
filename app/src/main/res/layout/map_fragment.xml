@@ -14,7 +14,7 @@
             android:id="@+id/edit_text"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:hint="radius"
+            android:hint="radius 'in meters'"
             android:layout_alignParentLeft="true"
 
             android:layout_toStartOf="@+id/set_radius" />
@@ -69,7 +69,6 @@
         android:id="@+id/map"
         android:layout_height="match_parent"
         android:layout_marginTop="5dp"
-        android:layout_alignParentBottom="true"
         >
     </com.google.android.gms.maps.MapView>
 
