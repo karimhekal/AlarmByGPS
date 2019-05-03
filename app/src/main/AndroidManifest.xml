@@ -31,7 +31,10 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:fitsSystemWindows="true"
+
+            >
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

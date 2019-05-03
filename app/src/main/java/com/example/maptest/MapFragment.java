@@ -30,6 +30,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -177,6 +178,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 Toast.makeText(mContext, "Draw a shape of 4 points on map, MAKE SURE YOU DRAW IN CLOCKWISE", Toast.LENGTH_LONG).show();
                 p=true;
                 c=false;
+                userChoosedCircle=false; // to make sure it's false
             }
         });
         circleRadio.setOnClickListener(new View.OnClickListener() {
@@ -185,6 +187,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 Toast.makeText(mContext, "Click on map to draw circle", Toast.LENGTH_LONG).show();
                 c=true;
                 p=false;
+                userChoosedPoly=false; // to make sure that this variable is false
             }
         });
         setRadius.setOnClickListener(new View.OnClickListener() {
@@ -278,13 +281,29 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             return;
         }
         mGoogleMap.setMyLocationEnabled(true);
+
         mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
         mGoogleApiClient.connect();
 
-    }
+
+        if (mMapView != null &&
+                mMapView.findViewById(Integer.parseInt("1")) != null) {
+            // Get the button view
+            View locationButton = ((View) mMapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            // and next place it, on bottom right (as Google Maps app)
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
+                    locationButton.getLayoutParams();
+            // position on right bottom
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+
+            layoutParams.setMargins(0, 0, 60, 60);
+
+
+        }}
 
     private void removeEveryThing() {
 

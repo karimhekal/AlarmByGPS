@@ -176,9 +176,6 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
                 Toast.makeText(MyService.this, "can't get current location", Toast.LENGTH_SHORT).show();
             }
             else {
-                LatLng ll=new LatLng(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude());
-                float[] distance = new float[2]; // to calculate distance between user and circle
-                Location.distanceBetween(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude(), circleLat, circleLng, distance);
 
                 if (workingOnPolygon) // we're checking for Polygon
                 {
@@ -211,6 +208,9 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
 
                 }
                 if (workingOnCircle){ //this means we're working on circle
+                    LatLng ll=new LatLng(locationResult.getLastLocation().getLatitude(),locationResult.getLastLocation().getLongitude());
+                    float[] distance = new float[2]; // to calculate distance between user and circle
+                    Location.distanceBetween(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude(), circleLat, circleLng, distance);
 
                     Toast.makeText(MyService.this, "Distance : "+distance, Toast.LENGTH_SHORT).show();
                     if (distance[0] <= circleRadius) {

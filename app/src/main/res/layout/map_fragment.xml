@@ -1,82 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
-    android:paddingVertical="5dp"
     android:layout_width="match_parent"
     android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent">
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <EditText
-            android:id="@+id/edit_text"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:hint="radius 'in meters'"
-            android:layout_alignParentLeft="true"
-
-            android:layout_toStartOf="@+id/set_radius" />
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Set circle radius"
-            android:id="@+id/set_radius"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-
-        android:layout_height="wrap_content">
-        <RadioGroup
-            android:padding="5dp"
-            android:id="@+id/rg"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/polygon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:text="Polygon" />
-
-            <RadioButton
-                android:id="@+id/circle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Circle" />
-        </RadioGroup>
-        <Button
-            android:layout_width="fill_parent"
-            android:id="@+id/clear_markers"
-            android:layout_height="wrap_content"
-            android:text="Clear Markers"/>
 
 
-    </LinearLayout>
 
-
-<TextView
-    android:layout_width="wrap_content"
-    android:id="@+id/make_sure"
-    android:textSize="13dp"
-    android:visibility="gone"
-
-    android:text="Make sure you draw in clock wise 'ma3 3a2areb elsa3a'"
-    android:layout_height="wrap_content" />
     <com.google.android.gms.maps.MapView
+
         android:layout_width="match_parent"
-        android:outlineAmbientShadowColor="@color/colorPrimaryDark"
         android:id="@+id/map"
         android:layout_height="match_parent"
-        android:layout_marginTop="5dp"
+
         >
     </com.google.android.gms.maps.MapView>
+    <LinearLayout
+        android:paddingHorizontal="0dp"
+        android:background="@color/transparent"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
 
-</LinearLayout>
+            android:layout_height="wrap_content">
+
+            <Button
+                android:fontFamily="serif-monospace"
+                android:elevation="100dp"
+                android:textStyle="bold"
+
+                android:layout_weight="0.5"
+                android:layout_marginRight="15dp"
+                android:id="@+id/set_radius"
+                android:layout_width="0.5in"
+                android:layout_height="wrap_content"
+                android:background="@color/custom"
+                android:text="Set circle radius" />
+            <Button
+                android:textStyle="bold"
+                android:fontFamily="serif-monospace"
+                android:elevation="100dp"
+                android:background="@color/custom"
+                android:layout_weight="0.5"
+                android:layout_width="0.5in"
+                android:id="@+id/clear_markers"
+                android:layout_height="wrap_content"
+                android:text="Clear Markers"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/edit_text"
+                android:padding="8dp"
+                android:layout_margin="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_weight="0.5"
+                android:autoSizeMaxTextSize="50dp"
+                android:background="@drawable/rounded_border"
+                android:fontFamily="sans-serif-medium"
+                android:hint="radius 'in meters'"
+                android:textSize="15dp" />
+            <RadioGroup
+                android:padding="5dp"
+                android:id="@+id/rg"
+                android:layout_width="wrap_content"
+                android:layout_weight="0.5"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:textStyle="bold"
+                    android:fontFamily="serif-monospace"
+                    android:id="@+id/polygon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#000000"
+                    android:text="Polygon" />
+
+                <RadioButton
+                    android:textStyle="bold"
+                    android:fontFamily="serif-monospace"
+                    android:id="@+id/circle"
+                    android:textColor="#000000"
+
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Circle" />
+            </RadioGroup>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>
