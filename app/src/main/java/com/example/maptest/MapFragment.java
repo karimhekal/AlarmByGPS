@@ -151,7 +151,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         {
             Log.e("Fragment : ",e.getMessage());
         }
-        removeEveryThing();
+        removeAllMarkers();
     }
 
     @Nullable
@@ -169,15 +169,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         clearMarkers.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                removeEveryThing();
+                removeAllMarkers();
             }
         });
         polygonRadio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(mContext, "Draw a shape of 4 points on map, MAKE SURE YOU DRAW IN CLOCKWISE", Toast.LENGTH_LONG).show();
-                p=true;
-                c=false;
+                p=true; // to indicate that we're working on a polygon
+                c=false; // to make sure that we're not working on a circle
                 userChoosedCircle=false; // to make sure it's false
             }
         });
@@ -185,8 +185,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             @Override
             public void onClick(View view) {
                 Toast.makeText(mContext, "Click on map to draw circle", Toast.LENGTH_LONG).show();
-                c=true;
-                p=false;
+                c=true; // c for circle
+                p=false; // p for polygon
                 userChoosedPoly=false; // to make sure that this variable is false
             }
         });
@@ -202,10 +202,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             }
         });
         return mView;
-    }
-
-    void addMarker(float lat, float lng) {
-        mGoogleMap.addMarker(new MarkerOptions().position(new LatLng(lat, lng)).title("sss").snippet("i hope to"));
     }
 
     @Override
@@ -224,8 +220,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     }
 
     int count=0;
-    private void goToLocationZoom(double lat1, double lng1, float zoom) {
-        if (count<2){  //because this function is called one time before i start the onLocationChanged
+    private void goToLocationAndZoom(double lat1, double lng1, float zoom) {
+        if (count<2){  //this variable counts how many times that "onLocationChanged" function is called , since it doesn't give you user location the first time it's called , usually the second time, So "count" only counts how many the "onLocationChanged" was called , and when it's called 2 times , this condition is applied
             LatLng ll = new LatLng(lat1, lng1);
             CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, zoom);
             mGoogleMap.moveCamera(update);
@@ -239,7 +235,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
         mGoogleMap = googleMap;
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        goToLocationZoom(lat, lng, 5);
+        goToLocationAndZoom(lat, lng, 5);
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -250,7 +246,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                     userChoosedPoly=true;
 
                     if (circleMarker||(markers.size()==POLYGON_POINTS)) {
-                        removeEveryThing();
+                        removeAllMarkers();
                         circleMarker=false;
                     }
                     if (markers.size()!=POLYGON_POINTS) {
@@ -259,8 +255,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 }
                 else if (c) // "c" means if user checked circle
                 {
+
                     userChoosedCircle=true;
-                    removeEveryThing();
+                    removeAllMarkers();
                     clicked(latLng);
                 }
                 else {
@@ -287,8 +284,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 .addOnConnectionFailedListener(this)
                 .build();
         mGoogleApiClient.connect();
-
-
         if (mMapView != null &&
                 mMapView.findViewById(Integer.parseInt("1")) != null) {
             // Get the button view
@@ -299,15 +294,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             // position on right bottom
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-
             layoutParams.setMargins(0, 0, 60, 60);
-
-
         }}
 
-    private void removeEveryThing() {
-
-
+    private void removeAllMarkers() {
         i=0;// to start polygons from points 1 again because i is the index of the array // check usage of i if you don't get it
         if (marker!=null){
             marker.remove();
@@ -336,12 +326,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     }
 
     int i=0;
-    private void polyClicked(LatLng latLng){
+    private void polyClicked(LatLng latLng){ // this is called everytime the user clickes on map while drawing the polygon
         if (markers.size()==POLYGON_POINTS)
         {
             //marker.getPosition();
             Toast.makeText(mContext, "Polygon is finished", Toast.LENGTH_SHORT).show();
-            removeEveryThing();
+            removeAllMarkers();
         }
         MarkerOptions options=new MarkerOptions().position(latLng).title("point");
 
@@ -351,12 +341,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
         if (markers.size() == POLYGON_POINTS) {
             drawPolygon();
-            markersLatLng[i] = latLng;
+            markersLatLng[i] = latLng; // stroing the last point poisition in the array that stores positions of points
             i=0; // to begin from start of the array again for the next polygon to draw
             en=false; // 3ashan ye5osh fel opendialog tany lama y3ml check 3al polygon fel onlocationchanged  //spaghetti awy hhh
         } else {
-            markersLatLng[i] = latLng;
-            i++;
+            markersLatLng[i] = latLng; // storing latlng of every click to an array that contains latlng of all points of the polygon
+            i++; // increasing this every time to access next index of the array
         }
 
 
@@ -383,10 +373,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             circleMarker = true;
             circle = drawCircle(latLng);
 
-            if (marker != null) {
+            if (marker != null) { // to remove the previous marker in case there's one
                 marker.remove();
             }
-            marker = mGoogleMap.addMarker(new MarkerOptions().position(latLng));
+            marker = mGoogleMap.addMarker(new MarkerOptions().position(latLng)); // adding the marker on map
 
         }catch (Exception e)
         {
@@ -397,7 +387,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
 
     private Circle drawCircle(LatLng latLng) {
-        if (circle!=null)
+        if (circle!=null) // to remove the previous circle if there's one
         {
             circle.remove();
         }
@@ -454,7 +444,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                     //Toast.makeText(mContext, "true", Toast.LENGTH_SHORT).show();
                 }
 
-                goToLocationZoom(location.getLatitude(),location.getLongitude(),12.5f);
+                goToLocationAndZoom(location.getLatitude(),location.getLongitude(),12.5f);
                 LatLng ll=new LatLng(location.getLatitude(),location.getLongitude());
                 update=CameraUpdateFactory.newLatLngZoom(ll,15); // update my location every 1 second
                 float[] distance = new float[2]; // to calculate distance between user and circle
