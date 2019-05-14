@@ -53,18 +53,16 @@ public class MainActivity extends FragmentActivity { //extend fragment activity 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-           // checkLocationPermission();
+            checkLocationPermission();
 
-                setContentView(R.layout.activity_main);
+            setContentView(R.layout.activity_main);
 
 
-             while (!checkLocationPermission()){
-                    mapFragment = new MapFragment();
-                    // ask user for location permission
-                    //   checkStoragePermission();
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_place, mapFragment);
-                }
-
+            while (!checkLocationPermission()) {
+                mapFragment = new MapFragment();
+               // dont load screen unless you have permission
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_place, mapFragment);
+            }
 
 
         } catch (Exception e) {
@@ -101,8 +99,7 @@ public class MainActivity extends FragmentActivity { //extend fragment activity 
 
             } else {
                 // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MY_PERMISSIONS_REQUEST_LOCATION);
-
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_LOCATION);
 
 
             }

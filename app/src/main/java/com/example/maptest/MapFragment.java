@@ -168,6 +168,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         editText = mView.findViewById(R.id.edit_text);
         polygonRadio=mView.findViewById(R.id.polygon);
         circleRadio=mView.findViewById(R.id.circle);
+        circleRadio.setChecked(true);
         enough=false;
         clearMarkers.setOnClickListener(new View.OnClickListener() {
             @Override
