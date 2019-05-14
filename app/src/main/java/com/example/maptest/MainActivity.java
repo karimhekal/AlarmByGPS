@@ -36,6 +36,7 @@ public class MainActivity extends FragmentActivity { //extend fragment activity 
     MapFragment mapFragment;
     boolean permission = false;
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);

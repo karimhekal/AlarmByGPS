@@ -80,7 +80,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
         vibrator = (Vibrator) MyService.this.getSystemService(Context.VIBRATOR_SERVICE);
         Toast.makeText(MyService.this, "service started", Toast.LENGTH_SHORT).show();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        showNotification("We're Monitoring your location","You havent arrived yet");
+
         if (Build.VERSION.SDK_INT >= 26) { // this notificatinos to inform user that service is running .. this also prevents system from killing the service because of background limitations
             String CHANNEL_ID = "my_channel_01";
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
@@ -88,8 +88,10 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
                     NotificationManager.IMPORTANCE_DEFAULT);
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("wwwwwwwwwwwwww").setContentText("We're monitoring your location").build();
+                    .setContentTitle("").setContentText("We're monitoring your location").build();
             startForeground(1, notification);
+        }else {
+            showNotification("We're Monitoring your location","You havent arrived yet");
         }
     }
 
@@ -203,7 +205,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
 
                     }
                     else { // user  outside the polygon
-   ////                     Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
+               ////   Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
                     }
 
                 }
@@ -236,7 +238,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
                         //  Toast.makeText(MyService.this, "back : Outside", Toast.LENGTH_SHORT).show();
                         //outside the circle
                         Log.e("Still outside circle",".....................................");
-     ////                   Toast.makeText(MyService.this, "OUTSIDEEE", Toast.LENGTH_SHORT).show();
+          ////         Toast.makeText(MyService.this, "OUTSIDEEE", Toast.LENGTH_SHORT).show();
                     }
                 }}
         }
@@ -416,7 +418,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setSmallIcon(R.drawable.applogo)
                 .setContentTitle(title)
                 .setContentText(description)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)

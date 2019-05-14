@@ -146,7 +146,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 mContext.registerReceiver(myReceiver, intentFilter);
                 Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
                 intent.putExtra("DATA", circleLat+"#"+circleLng+"#"+circleRadius); // putting $ between them so i can split them in the service and use them
-                getActivity().startForegroundService(intent);
+                getActivity().startService(intent);
                 mContext.unregisterReceiver(myReceiver);
 
             }
@@ -169,6 +169,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         polygonRadio=mView.findViewById(R.id.polygon);
         circleRadio=mView.findViewById(R.id.circle);
         circleRadio.setChecked(true);
+        c=true;
         enough=false;
         clearMarkers.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -179,7 +180,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         polygonRadio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(mContext, "Draw a shape of 4 points on map, MAKE SURE YOU DRAW IN CLOCKWISE", Toast.LENGTH_LONG).show();
+                Toast.makeText(mContext, "Draw 4 points in clockwise ", Toast.LENGTH_LONG).show();
                 p=true; // to indicate that we're working on a polygon
                 c=false; // to make sure that we're not working on a circle
                 userChoosedCircle=false; // to make sure it's false
