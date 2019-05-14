@@ -3,7 +3,9 @@ package com.example.maptest;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -22,6 +24,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -361,8 +364,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
         for ( int i=0;i<POLYGON_POINTS;i++)
         {
-            options.add(markers.get(i).getPosition());
-
+            options.add(markers.get(i).getPosition()); //accessing the positions of markers and putting them in "options"
         }
         shape=mGoogleMap.addPolygon(options);
 
@@ -434,10 +436,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                             en = true;
                         }
 
-                        Toast.makeText(mContext, "AAAYWA", Toast.LENGTH_SHORT).show();
+   ////                     Toast.makeText(mContext, "AAAYWA", Toast.LENGTH_SHORT).show();
                     }
                     else { // user outside the polygon
-                        Toast.makeText(mContext, "LAAA2", Toast.LENGTH_SHORT).show();
+     ////                   Toast.makeText(mContext, "LAAA2", Toast.LENGTH_SHORT).show();
                     }
 
                     boolean s=isPointInPolygon(locLatlng, markersLatLng);
@@ -454,13 +456,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                         if (!enough) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
                             openDialog();
                             //vibrator.vibrate(pattern, 1);
-                             Toast.makeText(mContext, "Inside the circle", Toast.LENGTH_SHORT).show();
+       ////                      Toast.makeText(mContext, "Inside the circle", Toast.LENGTH_SHORT).show();
                             enough = true;
                         }
                     }else
                     {
                         enough=false;
-                          Toast.makeText(mContext, "Outside", Toast.LENGTH_SHORT).show();
+        ////                  Toast.makeText(mContext, "Outside", Toast.LENGTH_SHORT).show();
                         //outside the circle
                     }
 
@@ -543,6 +545,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
         return x > pX;
     }
+
 
 
 

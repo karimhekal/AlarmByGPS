@@ -203,7 +203,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
 
                     }
                     else { // user  outside the polygon
-                        Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
+   ////                     Toast.makeText(MyService.this, "LAAA2", Toast.LENGTH_SHORT).show();
                     }
 
                 }
@@ -212,7 +212,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
                     float[] distance = new float[2]; // to calculate distance between user and circle
                     Location.distanceBetween(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude(), circleLat, circleLng, distance);
 
-                    Toast.makeText(MyService.this, "Distance : "+distance, Toast.LENGTH_SHORT).show();
+    ////                Toast.makeText(MyService.this, "Distance : "+distance, Toast.LENGTH_SHORT).show();
                     if (distance[0] <= circleRadius) {
 
                         showNotification("You Arrived","Mabrook");
@@ -236,7 +236,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
                         //  Toast.makeText(MyService.this, "back : Outside", Toast.LENGTH_SHORT).show();
                         //outside the circle
                         Log.e("Still outside circle",".....................................");
-                        Toast.makeText(MyService.this, "OUTSIDEEE", Toast.LENGTH_SHORT).show();
+     ////                   Toast.makeText(MyService.this, "OUTSIDEEE", Toast.LENGTH_SHORT).show();
                     }
                 }}
         }
