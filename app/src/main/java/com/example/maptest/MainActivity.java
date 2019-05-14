@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
@@ -33,6 +34,7 @@ import java.util.List;
 public class MainActivity extends FragmentActivity { //extend fragment activity so i can hide action bar
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     MapFragment mapFragment;
+    boolean permission = false;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -51,11 +53,20 @@ public class MainActivity extends FragmentActivity { //extend fragment activity 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            setContentView(R.layout.activity_main);
-            mapFragment = new MapFragment();
-            checkLocationPermission(); // ask user for location permission
-         //   checkStoragePermission();
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_place, mapFragment);
+           // checkLocationPermission();
+
+                setContentView(R.layout.activity_main);
+
+
+             while (!checkLocationPermission()){
+                    mapFragment = new MapFragment();
+                    // ask user for location permission
+                    //   checkStoragePermission();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_place, mapFragment);
+                }
+
+
+
         } catch (Exception e) {
             Log.e("MainActivityOnCreate: ", e.toString());
         }
@@ -90,42 +101,17 @@ public class MainActivity extends FragmentActivity { //extend fragment activity 
 
             } else {
                 // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
+                ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},MY_PERMISSIONS_REQUEST_LOCATION);
+
+
+
             }
             return false;
         } else {
             return true;
+
         }
     }
 
-    int MY_PERMISSIONS_REQUEST_STORAGE=90;
-    public void checkStoragePermission() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
 
-            // Permission is not granted
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-            } else {
-                // No explanation needed; request the permission
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        MY_PERMISSIONS_REQUEST_STORAGE);
-
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
-        } else {
-            // Permission has already been granted
-        }
-
-    }
 }

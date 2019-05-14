@@ -1,104 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 
-    android:layout_width="match_parent"
-    android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent">
-
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
 
     <com.google.android.gms.maps.MapView
 
-        android:layout_width="match_parent"
         android:id="@+id/map"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
 
-        >
-    </com.google.android.gms.maps.MapView>
-    <LinearLayout
-        android:paddingHorizontal="0dp"
-        android:background="@color/transparent"
-        android:layout_width="match_parent"
-        android:orientation="vertical"
-        android:layout_marginTop="20dp"
-        android:layout_height="wrap_content">
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
+        ></com.google.android.gms.maps.MapView>
 
-            android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@color/transparent"
+        android:orientation="vertical"
+        android:paddingHorizontal="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:orientation="horizontal">
 
             <Button
-                android:fontFamily="serif-monospace"
-                android:elevation="100dp"
-                android:textStyle="bold"
-
-                android:layout_weight="0.5"
-                android:layout_marginRight="15dp"
                 android:id="@+id/set_radius"
                 android:layout_width="0.5in"
                 android:layout_height="wrap_content"
-                android:background="@color/custom"
-                android:text="Set circle radius" />
-            <Button
-                android:textStyle="bold"
-                android:fontFamily="serif-monospace"
-                android:elevation="100dp"
-                android:background="@color/custom"
+
+                android:layout_marginRight="15dp"
                 android:layout_weight="0.5"
-                android:layout_width="0.5in"
+                android:background="@color/custom"
+                android:elevation="100dp"
+                android:fontFamily="serif-monospace"
+                android:text="Set circle radius"
+                android:textStyle="bold" />
+
+            <Button
                 android:id="@+id/clear_markers"
+                android:layout_width="0.5in"
                 android:layout_height="wrap_content"
-                android:text="Clear Markers"/>
+                android:layout_weight="0.5"
+                android:background="@color/custom"
+                android:elevation="100dp"
+                android:fontFamily="serif-monospace"
+                android:text="Clear Markers"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
 
-            android:layout_height="wrap_content">
+            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/edit_text"
-                android:padding="8dp"
-                android:layout_margin="5dp"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_alignParentLeft="true"
+                android:layout_margin="5dp"
                 android:layout_weight="0.5"
                 android:autoSizeMaxTextSize="50dp"
                 android:background="@drawable/rounded_border"
                 android:fontFamily="sans-serif-medium"
                 android:hint="radius 'in meters'"
+                android:padding="8dp"
                 android:textSize="15dp" />
+
             <RadioGroup
-                android:padding="5dp"
                 android:id="@+id/rg"
                 android:layout_width="wrap_content"
-                android:layout_weight="0.5"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_weight="0.5"
+                android:orientation="horizontal"
+                android:padding="5dp">
 
                 <RadioButton
-                    android:textStyle="bold"
-                    android:fontFamily="serif-monospace"
                     android:id="@+id/polygon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:fontFamily="serif-monospace"
+                    android:text="Polygon"
                     android:textColor="#000000"
-                    android:text="Polygon" />
+                    android:textStyle="bold" />
 
                 <RadioButton
-                    android:textStyle="bold"
-                    android:fontFamily="serif-monospace"
                     android:id="@+id/circle"
-                    android:textColor="#000000"
-
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Circle" />
+                    android:checked="true"
+                    android:fontFamily="serif-monospace"
+                    android:text="Circle"
+                    android:textColor="#000000"
+                    android:textStyle="bold" />
             </RadioGroup>
 
 
