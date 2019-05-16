@@ -31,7 +31,7 @@
 
             <Button
                 android:id="@+id/set_radius"
-                android:layout_width="0.5in"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
 
                 android:layout_marginRight="15dp"
@@ -44,7 +44,7 @@
 
             <Button
                 android:id="@+id/clear_markers"
-                android:layout_width="0.5in"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
                 android:background="@color/custom"
@@ -63,21 +63,21 @@
 
             <EditText
                 android:id="@+id/edit_text"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_alignParentLeft="true"
                 android:layout_margin="5dp"
-                android:layout_weight="0.5"
+                android:layout_weight="0.3"
                 android:autoSizeMaxTextSize="50dp"
                 android:background="@drawable/rounded_border"
                 android:fontFamily="sans-serif-medium"
                 android:hint="radius 'in meters'"
                 android:padding="8dp"
-                android:textSize="15dp" />
+                android:textSize="11dp" />
 
             <RadioGroup
                 android:id="@+id/rg"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.5"
                 android:orientation="horizontal"
@@ -85,8 +85,9 @@
 
                 <RadioButton
                     android:id="@+id/polygon"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
                     android:fontFamily="serif-monospace"
                     android:text="Polygon"
                     android:textColor="#000000"
@@ -94,8 +95,9 @@
 
                 <RadioButton
                     android:id="@+id/circle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
                     android:checked="true"
                     android:fontFamily="serif-monospace"
                     android:text="Circle"
@@ -104,6 +106,23 @@
             </RadioGroup>
 
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <AutoCompleteTextView
+                android:id="@+id/search_et"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:hint="Search a place" />
+
+            <Button
+                android:id="@+id/btn_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Search" />
         </LinearLayout>
 
     </LinearLayout>

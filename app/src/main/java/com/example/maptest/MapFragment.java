@@ -20,19 +20,24 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -42,6 +47,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
@@ -50,13 +56,18 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import java.util.ArrayList;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+    public static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
+            new LatLng(-40, -168),
+            new LatLng(71, 136)
+    );
     static final int POLYGON_POINTS = 4;
     final long[] pattern = {800, 400};
     public Context mContext;
     //views
     EditText editText;
+    AutoCompleteTextView searchTextView;
     RadioButton polygonRadio, circleRadio;
-    Button setRadius, clearMarkers;
+    Button setRadius, clearMarkers, btnSearch;
     MapView mMapView;
     View mView;
     //map
@@ -102,6 +113,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     @Override
     public void onPause() {
         super.onPause();
+
         vibrator.cancel();
         try {
 
@@ -151,8 +163,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
 
+       /* GoogleApiClient apiClient = new GoogleApiClient.Builder(mContext)
+                .addApi(LocationServices.API)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .addConnectionCallbacks(this)
+                .enableAutoManage(getActivity(), this)
+                .addOnConnectionFailedListener(this)
+                .build();*/
         polygonPoints = new LatLng[4];
         mView = inflater.inflate(R.layout.map_fragment, container, false);
+
         clearMarkers = mView.findViewById(R.id.clear_markers);
         setRadius = mView.findViewById(R.id.set_radius);
         vibrator = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
@@ -271,25 +292,32 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         }
         mGoogleMap.setMyLocationEnabled(true);
 
-        mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
+     //   if (mGoogleApiClient == null || !mGoogleApiClient.isConnected()) {
+            try {
+                mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApi(LocationServices.API)
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .build();
 
-        mGoogleApiClient.connect();
-        if (mMapView != null &&
-                mMapView.findViewById(Integer.parseInt("1")) != null) {
-            // Get the button view
-            View locationButton = ((View) mMapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-            // and next place it, on bottom right (as Google Maps app)
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
-                    locationButton.getLayoutParams();
-            // position on right bottom
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-            layoutParams.setMargins(0, 0, 60, 60);
+                mGoogleApiClient.connect();
+
+            } catch (Exception e) {
+                Log.e("mGoogleApiClient : ", e.toString());
+            }
+            if (mMapView != null &&
+                    mMapView.findViewById(Integer.parseInt("1")) != null) {
+                // Get the button view
+                View locationButton = ((View) mMapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+                // and next place it, on bottom right (as Google Maps app)
+                RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
+                        locationButton.getLayoutParams();
+                // position on right bottom
+                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+                layoutParams.setMargins(0, 0, 60, 60);
+            }
         }
-    }
+ //   }
 
     private void removeAllMarkers() {
         i = 0;// to start polygons from points 1 again because i is the index of the array // check usage of i if you don't get it
@@ -381,7 +409,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     }
 
 
-
     @Override
     public void onLocationChanged(Location location) {
         try {
@@ -465,13 +492,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-             return;
-        }
-        else {
+            return;
+        } else {
 
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
+
     @Override
     public void onConnectionSuspended(int i) {
 
@@ -518,8 +545,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
         return x > pX;
     }
-
-
 
 
 }
