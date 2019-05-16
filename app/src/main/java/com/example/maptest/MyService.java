@@ -45,7 +45,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
     Vibrator vibrator;
     String initData;
     boolean enough = false;
-    boolean shown = false;
+  //  boolean shown = false;
     double circleLat, circleLng, circleRadius; // to store circle position that came from intent
     String[] circleArray; // to split the incoming circle position from intent and store them in it
     String[] pointsArray; // to split "allpoints" array and store the points positions in the arrays below
@@ -100,7 +100,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
                     Location.distanceBetween(locationResult.getLastLocation().getLatitude(), locationResult.getLastLocation().getLongitude(), circleLat, circleLng, distance);
 
                     ////                Toast.makeText(MyService.this, "Distance : "+distance, Toast.LENGTH_SHORT).show();
-                    if (distance[0] <= circleRadius) {
+                    if (distance[0] <= circleRadius) { // if
 
                         showNotification("You Arrived", "Mabrook");
                         final MediaPlayer mp = MediaPlayer.create(MyService.this, R.raw.alarm);
@@ -172,7 +172,7 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
                 double p3[] = convertToDouble(thirdPoint);
                 double p4[] = convertToDouble(fourthPoint);
                 fillLatLng(p1, p2, p3, p4); // assigning all these points in one array to calculate that array in the "ray casting algorithm"
-                workingOnPolygon = true; // assigned true so (onlocationresult) checks what shape to listen to
+                workingOnPolygon = true; // assigned true so (onlocationresult) checks what polygonShape to listen to
                 Log.e("Working on : ", "POLYGON");
             }
             if (initData.contains("#")) { // check if the incoming intent contains # , that means it's a circle
@@ -231,11 +231,10 @@ public class MyService extends Service implements OnMapReadyCallback, LocationLi
     }
 
     private boolean isPointInPolygon(LatLng tap, LatLng[] vertices) {
-
         int intersectCount = 0;
         int h = 0; // for the while loop to increase
         while (h < vertices.length - 1) {
-            if ((rayCastIntersect(tap, vertices[h], vertices[h + 1])) == true) { //rayCastIntersect(tap, vertices[h], vertices[h + 1])
+            if ((rayCastIntersect(tap, vertices[h], vertices[h + 1]))) { //rayCastIntersect(tap, vertices[h], vertices[h + 1])
                 intersectCount++;
             }
             h++; // increasing normal loop

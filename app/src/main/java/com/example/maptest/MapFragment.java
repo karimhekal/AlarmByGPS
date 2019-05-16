@@ -2,13 +2,18 @@ package com.example.maptest;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+
 import com.google.android.gms.location.LocationListener;
+
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -16,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +29,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -48,51 +53,54 @@ import com.google.android.gms.maps.model.PolygonOptions;
 import java.util.ArrayList;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, LocationListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-
-    Circle circle;
-    ArrayList<Marker> markers= new ArrayList<>();
-
-    static final int POLYGON_POINTS=4;
-    Polygon shape;
-    GoogleMap mGoogleMap;
-    boolean enough=false;
-    boolean userChoosedCircle=false;
-    GoogleMap m;
-    CameraUpdate update;
-    float lat = 30, lng = 0;
-    View mView;
-
-    LatLng[] markersLatLng;
-    Vibrator vibrator;
-    LatLng saveCircleLocation;
-    Marker marker;
-    MapView mMapView;
-    GoogleApiClient mGoogleApiClient;
-    //Button zoom;
-    int radius=1000;
+    public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    static final int POLYGON_POINTS = 4;
+    final long[] pattern = {800, 400};
+    public Context mContext;
+    //views
     EditText editText;
-    RadioButton polygonRadio,circleRadio;
-    RadioGroup rg;
-    boolean c=false,p=false;
+    RadioButton polygonRadio, circleRadio;
+    Button setRadius, clearMarkers;
+    MapView mMapView;
+    View mView;
+    //map
+    GoogleMap mGoogleMap;
+    GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
-    Button setRadius,clearMarkers;
-
-
-
+    //Markers and shapes
+    ArrayList<Marker> polygonMarkers = new ArrayList<>(); // to store polygonMarkers of polygon
+    Marker marker;
+    Polygon polygonShape;
+    Circle circle;
+    //latlng and numbers
+    int radius = 1000; // circle radius is 1000 meter by default
+    float lat = 30, lng = 0;
+    int count = 0;
+    int i = 0;
+    LatLng[] polygonPoints; //latlng of polygon points
+    LatLng saveCircleLocation; // the latlng is sent to the service to work on it in background
+    //booleans
+    boolean enough = false;
+    boolean userChosenCircle = false;
+    boolean userChoosedPoly = false;
+    boolean c = false, p = false;
+    boolean circleMarker;
+    boolean makerSureItRunsOnce = false;  //needs refactoring
+    Vibrator vibrator;
+    MyReceiver myReceiver;
+    CameraUpdate update;
+    Context context = getContext();
+    Activity activity = getActivity();
 
     @Override
     public void onResume() {
-        //clicked(saveCircleLocation);
-        userChoosedPoly=false;
-        userChoosedCircle=false;
-        Intent i= new Intent(getActivity().getApplicationContext(),MyService.class);
+        //drawCircleMarker(saveCircleLocation);
+        ////////       userChoosedPoly = false;
+        ///////       userChosenCircle = false;
+        Intent i = new Intent(getActivity().getApplicationContext(), MyService.class);
         getActivity().stopService(i);
         super.onResume();
-      }
-    boolean userChoosedPoly=false;
-
-    MyReceiver myReceiver;
-    String[] markersField;
+    }
 
     @TargetApi(Build.VERSION_CODES.O)
     @Override
@@ -101,11 +109,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         vibrator.cancel();
         try {
 
-            if (userChoosedPoly) { //start the service only if user checked polygon
-                String point1 = String.valueOf(markersLatLng[0].latitude) + "$" + String.valueOf(markersLatLng[0].longitude); //putting $ between them so i can split the lat and lng in the service
-                String point2 = String.valueOf(markersLatLng[1].latitude) + "$" + String.valueOf(markersLatLng[1].longitude);
-                String point3 = String.valueOf(markersLatLng[2].latitude) + "$" + String.valueOf(markersLatLng[2].longitude);
-                String point4 = String.valueOf(markersLatLng[3].latitude) + "$" + String.valueOf(markersLatLng[3].longitude);
+            if (polygonRadio.isChecked()) { //start the service only if user checked polygon ////////if (userChoosedPoly)
+                //------- the code below stores the position of the polygon and sends it to the service -------
+                String point1 = String.valueOf(polygonPoints[0].latitude) + "$" + String.valueOf(polygonPoints[0].longitude); //putting $ between them so i can split the lat and lng in the service
+                String point2 = String.valueOf(polygonPoints[1].latitude) + "$" + String.valueOf(polygonPoints[1].longitude);
+                String point3 = String.valueOf(polygonPoints[2].latitude) + "$" + String.valueOf(polygonPoints[2].longitude);
+                String point4 = String.valueOf(polygonPoints[3].latitude) + "$" + String.valueOf(polygonPoints[3].longitude);
 
                 String allPoints = point1 + "*" + point2 + "*" + point3 + "*" + point4; // seperating them by * so i can split the points in the service
                 // now "allPoints" contains all data of the 4 points , it will be sent as an intent to the service
@@ -118,25 +127,25 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 getActivity().startForegroundService(intent);
                 mContext.unregisterReceiver(myReceiver);
             }
-            Intent i = new Intent(mContext,MyService.class);
-            if (userChoosedCircle){ // start the service only if the user choosed a location
+            Intent i = new Intent(mContext, MyService.class);
+            if (circleRadio.isChecked()) { // start the service only if the user checked a circle   //////////if(userChosenCircle)
 
-                String circleLat= String.valueOf(saveCircleLocation.latitude);
+                //------- the code below stores the position of the circle and sends it to the service -------
+                String circleLat = String.valueOf(saveCircleLocation.latitude);
                 String circleLng = String.valueOf(saveCircleLocation.longitude);
-                String circleRadius= String.valueOf(radius);
+                String circleRadius = String.valueOf(radius);
                 myReceiver = new MyReceiver();
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(MyService.MY_ACTION);
                 mContext.registerReceiver(myReceiver, intentFilter);
                 Intent intent = new Intent(mContext, com.example.maptest.MyService.class);
-                intent.putExtra("DATA", circleLat+"#"+circleLng+"#"+circleRadius); // putting $ between them so i can split them in the service and use them
+                intent.putExtra("DATA", circleLat + "#" + circleLng + "#" + circleRadius); // putting $ between them so i can split them in the service and use them
                 getActivity().startService(intent);
                 mContext.unregisterReceiver(myReceiver);
 
             }
-        }catch (Exception e)
-        {
-            Log.e("Fragment : ",e.getMessage());
+        } catch (Exception e) {
+            Log.e("Fragment : ", e.getMessage());
         }
         removeAllMarkers();
     }
@@ -144,17 +153,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        markersLatLng= new LatLng[4];
+
+
+        polygonPoints = new LatLng[4];
         mView = inflater.inflate(R.layout.map_fragment, container, false);
-        clearMarkers=mView.findViewById(R.id.clear_markers);
-        setRadius=mView.findViewById(R.id.set_radius);
+        clearMarkers = mView.findViewById(R.id.clear_markers);
+        setRadius = mView.findViewById(R.id.set_radius);
         vibrator = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
         editText = mView.findViewById(R.id.edit_text);
-        polygonRadio=mView.findViewById(R.id.polygon);
-        circleRadio=mView.findViewById(R.id.circle);
+        polygonRadio = mView.findViewById(R.id.polygon);
+        circleRadio = mView.findViewById(R.id.circle);
         circleRadio.setChecked(true);
-        c=true;
-        enough=false;
+        //////////////       c = true;
+        enough = false;
         clearMarkers.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -165,27 +176,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             @Override
             public void onClick(View view) {
                 Toast.makeText(mContext, "Draw 4 points in clockwise ", Toast.LENGTH_LONG).show();
-                p=true; // to indicate that we're working on a polygon
-                c=false; // to make sure that we're not working on a circle
-                userChoosedCircle=false; // to make sure it's false
+                ///////////               p = true; // to indicate that we're working on a polygon
+                ///////////               c = false; // to make sure that we're not working on a circle
+                ///////////               userChosenCircle = false; // to make sure it's false
             }
         });
         circleRadio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(mContext, "Click on map to draw circle", Toast.LENGTH_LONG).show();
-                c=true; // c for circle
-                p=false; // p for polygon
-                userChoosedPoly=false; // to make sure that this variable is false
+                //////////               c = true; // c for circle
+                //////////               p = false; // p for polygon
+                //////////              userChoosedPoly = false; // to make sure that this variable is false
             }
         });
         setRadius.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                try{
-                    radius=Integer.valueOf(editText.getText().toString());
-                }catch (Exception e){
+                try {
+                    radius = Integer.valueOf(editText.getText().toString());
+                } catch (Exception e) {
                     Toast.makeText(mContext, "Configuring", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -208,15 +219,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         }
     }
 
-    int count=0;
     private void goToLocationAndZoom(double lat1, double lng1, float zoom) {
-        if (count<2){  //this variable counts how many times that "onLocationChanged" function is called , since it doesn't give you user location the first time it's called , usually the second time, So "count" only counts how many the "onLocationChanged" was called , and when it's called 2 times , this condition is applied
+        if (count < 2) {  //this variable counts how many times that "onLocationChanged" function is called , since it doesn't give you user location the first time it's called , usually the second time, So "count" only counts how many the "onLocationChanged" was called , and when it's called 2 times , this condition is applied
             LatLng ll = new LatLng(lat1, lng1);
             CameraUpdate update = CameraUpdateFactory.newLatLngZoom(ll, zoom);
             mGoogleMap.moveCamera(update);
-            count++;}
+            count++;
+        }
     }
-
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -225,31 +235,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         mGoogleMap = googleMap;
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         goToLocationAndZoom(lat, lng, 5);
-        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() { // listen for click on map to draw stuff
             @Override
             public void onMapClick(LatLng latLng) {
-                saveCircleLocation=latLng;
-                enough=false;
-                if (p) // "p" means if user checked polygon
+                saveCircleLocation = latLng; // save latlng of the click and store it to saveCircleLocation
+                enough = false;
+                if (polygonRadio.isChecked()) // "p" means if user checked polygon  ///////////// if (p)
                 {
-                    userChoosedPoly=true;
+                    ////////////                   userChoosedPoly = true;
 
-                    if (circleMarker||(markers.size()==POLYGON_POINTS)) {
+                    if (circleMarker || (polygonMarkers.size() == POLYGON_POINTS)) {
                         removeAllMarkers();
-                        circleMarker=false;
+                        circleMarker = false;
                     }
-                    if (markers.size()!=POLYGON_POINTS) {
-                        polyClicked(latLng);
+                    if (polygonMarkers.size() != POLYGON_POINTS) {
+                        drawPolygonPoint(latLng);
                     }
-                }
-                else if (c) // "c" means if user checked circle
+                } else if (circleRadio.isChecked()) // "c" means if user checked circle //////////// if (c)
                 {
-
-                    userChoosedCircle=true;
+//////////////               userChosenCircle = true;
                     removeAllMarkers();
-                    clicked(latLng);
-                }
-                else {
+                    drawCircleMarker(latLng);
+                } else {
                     Toast.makeText(mContext, "Select Circle or Polygon first", Toast.LENGTH_SHORT).show();
                 }
 
@@ -272,6 +279,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
         mGoogleApiClient.connect();
         if (mMapView != null &&
                 mMapView.findViewById(Integer.parseInt("1")) != null) {
@@ -284,112 +292,175 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
             layoutParams.setMargins(0, 0, 60, 60);
-        }}
+        }
+    }
 
     private void removeAllMarkers() {
-        i=0;// to start polygons from points 1 again because i is the index of the array // check usage of i if you don't get it
-        if (marker!=null){
+        i = 0;// to start polygons from points 1 again because i is the index of the array // check usage of i if you don't get it
+        if (marker != null) {
             marker.remove();
-            marker=null;
+            marker = null;
         }
-        if (circle!=null)
-        {circle.remove();
-            circle=null;
+        if (circle != null) {
+            circle.remove();
+            circle = null;
         }
-        if (markers!=null){
-            for (Marker marker:markers)
-            {
-
+        if (polygonMarkers != null) {
+            for (Marker marker : polygonMarkers) {
 
 
                 marker.remove();
             }
-            markers.clear();
-            marker=null;
+            polygonMarkers.clear();
+            marker = null;
         }
-        if (shape!=null)
-        {
-            shape.remove();
-            shape=null;
+        if (polygonShape != null) {
+            polygonShape.remove();
+            polygonShape = null;
         }
     }
 
-    int i=0;
-    private void polyClicked(LatLng latLng){ // this is called everytime the user clickes on map while drawing the polygon
-        if (markers.size()==POLYGON_POINTS)
-        {
+    private void drawPolygonPoint(LatLng latLng) { // this is called everytime the user clickes on map while drawing the polygon
+        if (polygonMarkers.size() == POLYGON_POINTS) {
             //marker.getPosition();
             Toast.makeText(mContext, "Polygon is finished", Toast.LENGTH_SHORT).show();
             removeAllMarkers();
         }
-        MarkerOptions options=new MarkerOptions().position(latLng).title("point");
+        MarkerOptions options = new MarkerOptions().position(latLng).title("point");
 
 
-        markers.add(mGoogleMap.addMarker(options));
+        polygonMarkers.add(mGoogleMap.addMarker(options));
 
 
-        if (markers.size() == POLYGON_POINTS) {
+        if (polygonMarkers.size() == POLYGON_POINTS) {
             drawPolygon();
-            markersLatLng[i] = latLng; // stroing the last point poisition in the array that stores positions of points
-            i=0; // to begin from start of the array again for the next polygon to draw
-            en=false; // 3ashan ye5osh fel opendialog tany lama y3ml check 3al polygon fel onlocationchanged  //spaghetti awy hhh
+            polygonPoints[i] = latLng; // stroing the last point position in the array that stores positions of points
+            i = 0; // to begin from start of the array again for the next polygon to draw
+            makerSureItRunsOnce = false; // 3ashan ye5osh fel opendialog tany lama y3ml check 3al polygon fel onlocationchanged  //spaghetti awy hhh
         } else {
-            markersLatLng[i] = latLng; // storing latlng of every click to an array that contains latlng of all points of the polygon
+            polygonPoints[i] = latLng; // storing latlng of every click to an array that contains latlng of all points of the polygon
             i++; // increasing this every time to access next index of the array
         }
 
 
-
     }
 
+
+    // mGoogleMap.animateCamera(update);
+
     private void drawPolygon() {
-        PolygonOptions options=new PolygonOptions()
+        PolygonOptions options = new PolygonOptions()
                 .fillColor(0x3000ffff)
                 .strokeWidth(3)
                 .strokeColor(Color.RED);
 
-        for ( int i=0;i<POLYGON_POINTS;i++)
-        {
-            options.add(markers.get(i).getPosition()); //accessing the positions of markers and putting them in "options"
+        for (int i = 0; i < POLYGON_POINTS; i++) {
+            options.add(polygonMarkers.get(i).getPosition()); //accessing the positions of polygonMarkers and putting them in "options"
         }
-        shape=mGoogleMap.addPolygon(options);
+        polygonShape = mGoogleMap.addPolygon(options);
 
     }
-    boolean circleMarker;
-    private void clicked(LatLng latLng) {
+
+    private void drawCircleMarker(LatLng latLng) {  // this is called when drawing a circle
         try {
             circleMarker = true;
             circle = drawCircle(latLng);
-
             if (marker != null) { // to remove the previous marker in case there's one
                 marker.remove();
             }
             marker = mGoogleMap.addMarker(new MarkerOptions().position(latLng)); // adding the marker on map
 
-        }catch (Exception e)
-        {
-            Log.e("Error 1: ",e.toString());
+        } catch (Exception e) {
+            Log.e("Error 1: ", e.toString());
         }
     }
 
-
-
     private Circle drawCircle(LatLng latLng) {
-        if (circle!=null) // to remove the previous circle if there's one
+        if (circle != null) // to remove the previous circle if there's one
         {
             circle.remove();
         }
-        CircleOptions options=new CircleOptions().center(latLng).radius(radius).fillColor(0x33FF0000).strokeColor(Color.BLUE).strokeWidth(3);
+        CircleOptions options = new CircleOptions().center(latLng).radius(radius).fillColor(0x33FF0000).strokeColor(Color.BLUE).strokeWidth(3);
         return mGoogleMap.addCircle(options);
     }
 
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+        try {
+            //Toast.makeText(mContext, "Running in back: "+location.getLatitude(), Toast.LENGTH_SHORT).show();
+            if (location == null) {
+                Toast.makeText(mContext, "can't get current location", Toast.LENGTH_SHORT).show();
+            } else {
+
+                if (polygonMarkers.size() == POLYGON_POINTS) { // this condition checks if we're using polygon
+                    LatLng locLatlng = new LatLng(location.getLatitude(), location.getLongitude());
+                    if (isPointInPolygon(locLatlng, polygonPoints)) // inside the polygon
+                    {
+                        if (!makerSureItRunsOnce) { // make the vibration work one time 3ashan lama bey update el location tany byla2y makerSureItRunsOnce el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
+                            openDialog();
+                            makerSureItRunsOnce = true;
+                        }
+
+                        ////                     Toast.makeText(mContext, "AAAYWA", Toast.LENGTH_SHORT).show();
+                    } else { // user outside the polygon
+                        ////                   Toast.makeText(mContext, "LAAA2", Toast.LENGTH_SHORT).show();
+                    }
+
+                    boolean s = isPointInPolygon(locLatlng, polygonPoints);
+                    //Toast.makeText(mContext, "true", Toast.LENGTH_SHORT).show();
+                }
+
+                goToLocationAndZoom(location.getLatitude(), location.getLongitude(), 12.5f);
+                LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
+                update = CameraUpdateFactory.newLatLngZoom(ll, 15); // update my location every 1 second
+                float[] distance = new float[2]; // to calculate distance between user and circle
+                if (circleMarker && circle != null) {// to make sure that we're using the circle not polygon   /////////////if (circleMarker && circle != null)
+                    Location.distanceBetween(location.getLatitude(), location.getLongitude(), circle.getCenter().latitude, circle.getCenter().longitude, distance);
+                    if (distance[0] <= circle.getRadius()) {
+                        if (!enough) { // make the vibration work one time 3ashan lama bey update el location tany byla2y makerSureItRunsOnce el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
+                            openDialog();
+                            //vibrator.vibrate(pattern, 1);
+                            ////                      Toast.makeText(mContext, "Inside the circle", Toast.LENGTH_SHORT).show();
+                            enough = true;
+                        }
+                    } else {
+                        enough = false;
+                        ////                  Toast.makeText(mContext, "Outside", Toast.LENGTH_SHORT).show();
+                        //outside the circle
+                    }
+
+
+                }
+                // Location.distanceBetween(location.getLatitude(), location.getLongitude(), polygonShape.get().latitude, pol.gets().longitude, distance);
+                // Toast.makeText(mContext, "Normal : "+ location.getLatitude(), Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("Error 2: ", e.getMessage());
+            //Toast.makeText(getActivity(), "ERRRRORRRRR: " +e.toString(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.mContext = context;
+    }
+
+    private void openDialog() {
+        ExampleDialog exampleDialog = new ExampleDialog();
+        exampleDialog.show(getFragmentManager(), "Example dialog");
+        exampleDialog.setCancelable(true);
+    }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
         mLocationRequest = LocationRequest.create();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // make accurace to high
-        mLocationRequest.setInterval(1000); // update my location every 1 second
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY); // set accuracy to high
+        mLocationRequest.setInterval(3000); // update my location every 1 second
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -398,92 +469,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-            return;
+             return;
+        }
+        else {
+
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-
     }
-    final long[] pattern={800,400};
-    @Override
-    public void onLocationChanged(Location location) {
-        try{
-            //Toast.makeText(mContext, "Running in back: "+location.getLatitude(), Toast.LENGTH_SHORT).show();
-            if (location==null){
-                Toast.makeText(mContext, "can't get current location", Toast.LENGTH_SHORT).show();
-            }
-            else {
-
-                if (markers.size()==POLYGON_POINTS) { // this condition checks if we're using polygon
-                    LatLng locLatlng = new LatLng(location.getLatitude(), location.getLongitude());
-                    if (isPointInPolygon(locLatlng, markersLatLng)) // inside the polygon
-                    {
-                        if (!en) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
-                            openDialog();
-                            en = true;
-                        }
-
-   ////                     Toast.makeText(mContext, "AAAYWA", Toast.LENGTH_SHORT).show();
-                    }
-                    else { // user outside the polygon
-     ////                   Toast.makeText(mContext, "LAAA2", Toast.LENGTH_SHORT).show();
-                    }
-
-                    boolean s=isPointInPolygon(locLatlng, markersLatLng);
-                    //Toast.makeText(mContext, "true", Toast.LENGTH_SHORT).show();
-                }
-
-                goToLocationAndZoom(location.getLatitude(),location.getLongitude(),12.5f);
-                LatLng ll=new LatLng(location.getLatitude(),location.getLongitude());
-                update=CameraUpdateFactory.newLatLngZoom(ll,15); // update my location every 1 second
-                float[] distance = new float[2]; // to calculate distance between user and circle
-                if (circleMarker&&circle!=null) {// to make sure that we're using the circle not polygon
-                    Location.distanceBetween(location.getLatitude(), location.getLongitude(), circle.getCenter().latitude, circle.getCenter().longitude, distance);
-                    if (distance[0] <= circle.getRadius()) {
-                        if (!enough) { // make the vibration work one time 3ashan lama bey update el location tany byla2y en el user lessa fel circle fa byshaghal el vibration kol shwya ma3 kol update law el condition da msh mawgod
-                            openDialog();
-                            //vibrator.vibrate(pattern, 1);
-       ////                      Toast.makeText(mContext, "Inside the circle", Toast.LENGTH_SHORT).show();
-                            enough = true;
-                        }
-                    }else
-                    {
-                        enough=false;
-        ////                  Toast.makeText(mContext, "Outside", Toast.LENGTH_SHORT).show();
-                        //outside the circle
-                    }
-
-
-                }
-                // Location.distanceBetween(location.getLatitude(), location.getLongitude(), shape.get().latitude, pol.gets().longitude, distance);
-                // Toast.makeText(mContext, "Normal : "+ location.getLatitude(), Toast.LENGTH_SHORT).show();
-            }
-        }catch (Exception e)
-        {
-            e.printStackTrace();
-            Log.e("Error 2: ",e.getMessage());
-            //Toast.makeText(getActivity(), "ERRRRORRRRR: " +e.toString(), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    // mGoogleMap.animateCamera(update);
-
-
-
-    public Context mContext;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.mContext=context;
-    }
-
-    private void openDialog() {
-        ExampleDialog exampleDialog=new ExampleDialog();
-        exampleDialog.show(getFragmentManager(),"Example dialog");
-        exampleDialog.setCancelable(true);
-    }
-
     @Override
     public void onConnectionSuspended(int i) {
 
@@ -494,13 +486,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
     }
 
-    boolean en=false;
     private boolean isPointInPolygon(LatLng tap, LatLng[] vertices) {
 
         int intersectCount = 0;
-        int h=0;
-        while (h<vertices.length-1)
-        {
+        int h = 0;
+        while (h < vertices.length - 1) {
             if ((rayCastIntersect(tap, vertices[h], vertices[h + 1]))) { //rayCastIntersect(tap, vertices[h], vertices[h + 1])
                 intersectCount++;
             }
@@ -510,6 +500,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         return ((intersectCount % 2) == 1); // odd = inside, even = outside;
 
     }
+
     boolean rayCastIntersect(LatLng tap, LatLng vertA, LatLng vertB) {
 
         double aY = vertA.latitude;
