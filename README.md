@@ -6,3 +6,12 @@ An app that alarms you when you arrive a certain location that you specified on 
 
 
 ![alt text](https://i.ibb.co/cCpBs7b/59638973-1950953125014863-6035188259364012032-n.jpg)
+
+
+/*
+  > Copyright (C) [2019] [karim adly mahmoud]
+
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ * Written by Karim Adly <karimhekal@gmail.com>, April 2019
+ */
