@@ -11,7 +11,7 @@ An app that alarms you when you arrive a certain location that you specified on 
 /*
   > Copyright (C) [2019] [karim adly mahmoud]
 
- * Unauthorized copying or publishing of this project , via any medium is strictly prohibited
+ * Unauthorized copying or publishing or distributing of this project , via any medium is strictly prohibited
  * Proprietary and confidential
  * Written by Karim Adly <karimhekal@gmail.com>, April 2019
  */
