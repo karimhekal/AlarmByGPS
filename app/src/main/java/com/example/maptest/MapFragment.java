@@ -158,7 +158,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-
+        try {
        /* GoogleApiClient apiClient = new GoogleApiClient.Builder(mContext)
                 .addApi(LocationServices.API)
                 .addApi(Places.GEO_DATA_API)
@@ -167,53 +167,57 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
                 .enableAutoManage(getActivity(), this)
                 .addOnConnectionFailedListener(this)
                 .build();*/
-        polygonPoints = new LatLng[4];
-        mView = inflater.inflate(R.layout.map_fragment, container, false);
+            polygonPoints = new LatLng[4];
+            mView = inflater.inflate(R.layout.map_fragment, container, false);
 
-        clearMarkers = mView.findViewById(R.id.clear_markers);
-        setRadius = mView.findViewById(R.id.set_radius);
-        vibrator = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
-        editText = mView.findViewById(R.id.edit_text);
-        polygonRadio = mView.findViewById(R.id.polygon);
-        circleRadio = mView.findViewById(R.id.circle);
-        circleRadio.setChecked(true);
-        //////////////       c = true;
-        enough = false;
-        clearMarkers.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                removeAllMarkers();
-            }
-        });
-        polygonRadio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(mContext, "Draw 4 points in clockwise ", Toast.LENGTH_LONG).show();
-                ///////////               p = true; // to indicate that we're working on a polygon
-                ///////////               c = false; // to make sure that we're not working on a circle
-                ///////////               userChosenCircle = false; // to make sure it's false
-            }
-        });
-        circleRadio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(mContext, "Click on map to draw circle", Toast.LENGTH_LONG).show();
-                //////////               c = true; // c for circle
-                //////////               p = false; // p for polygon
-                //////////              userChoosedPoly = false; // to make sure that this variable is false
-            }
-        });
-        setRadius.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                try {
-                    radius = Integer.valueOf(editText.getText().toString());
-                } catch (Exception e) {
-                    Toast.makeText(mContext, "Configuring", Toast.LENGTH_SHORT).show();
+            clearMarkers = mView.findViewById(R.id.clear_markers);
+            setRadius = mView.findViewById(R.id.set_radius);
+            vibrator = (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
+            editText = mView.findViewById(R.id.edit_text);
+            polygonRadio = mView.findViewById(R.id.polygon);
+            circleRadio = mView.findViewById(R.id.circle);
+            circleRadio.setChecked(true);
+            //////////////       c = true;
+            enough = false;
+            clearMarkers.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    removeAllMarkers();
                 }
-            }
-        });
+            });
+            polygonRadio.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(mContext, "Draw 4 points in clockwise ", Toast.LENGTH_LONG).show();
+                    ///////////               p = true; // to indicate that we're working on a polygon
+                    ///////////               c = false; // to make sure that we're not working on a circle
+                    ///////////               userChosenCircle = false; // to make sure it's false
+                }
+            });
+            circleRadio.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(mContext, "Click on map to draw circle", Toast.LENGTH_LONG).show();
+                    //////////               c = true; // c for circle
+                    //////////               p = false; // p for polygon
+                    //////////              userChoosedPoly = false; // to make sure that this variable is false
+                }
+            });
+            setRadius.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+                    try {
+                        radius = Integer.valueOf(editText.getText().toString());
+                    } catch (Exception e) {
+                        Toast.makeText(mContext, "Configuring", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            Log.e("oncreate : ", e.toString());
+        }
         return mView;
     }
 
@@ -288,32 +292,32 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         }
         mGoogleMap.setMyLocationEnabled(true);
 
-     //   if (mGoogleApiClient == null || !mGoogleApiClient.isConnected()) {
-            try {
-                mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApi(LocationServices.API)
-                        .addConnectionCallbacks(this)
-                        .addOnConnectionFailedListener(this)
-                        .build();
+        //   if (mGoogleApiClient == null || !mGoogleApiClient.isConnected()) {
+        try {
+            mGoogleApiClient = new GoogleApiClient.Builder(mContext).addApi(LocationServices.API)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
 
-                mGoogleApiClient.connect();
+            mGoogleApiClient.connect();
 
-            } catch (Exception e) {
-                Log.e("mGoogleApiClient : ", e.toString());
-            }
-            if (mMapView != null &&
-                    mMapView.findViewById(Integer.parseInt("1")) != null) {
-                // Get the button view
-                View locationButton = ((View) mMapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-                // and next place it, on bottom right (as Google Maps app)
-                RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
-                        locationButton.getLayoutParams();
-                // position on right bottom
-                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-                layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-                layoutParams.setMargins(0, 0, 60, 60);
-            }
+        } catch (Exception e) {
+            Log.e("mGoogleApiClient : ", e.toString());
         }
- //   }
+        if (mMapView != null &&
+                mMapView.findViewById(Integer.parseInt("1")) != null) {
+            // Get the button view
+            View locationButton = ((View) mMapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            // and next place it, on bottom right (as Google Maps app)
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
+                    locationButton.getLayoutParams();
+            // position on right bottom
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            layoutParams.setMargins(0, 0, 60, 60);
+        }
+    }
+    //   }
 
     private void removeAllMarkers() {
         i = 0;// to start polygons from points 1 again because i is the index of the array // check usage of i if you don't get it
@@ -327,8 +331,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
         }
         if (polygonMarkers != null) {
             for (Marker marker : polygonMarkers) {
-
-
                 marker.remove();
             }
             polygonMarkers.clear();
@@ -368,16 +370,58 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, Locatio
 
     // mGoogleMap.animateCamera(update);
 
-    private void drawPolygon() {
-        PolygonOptions options = new PolygonOptions()
+    private void drawPolygon() {  /////////// before drawing the polygon i will make sure that the 4 points are in the right place in the array in case the user didn't draw in clockwise
+
+        PolygonOptions options = new PolygonOptions() //  How the polygon will look like
                 .fillColor(0x3000ffff)
                 .strokeWidth(3)
                 .strokeColor(Color.RED);
 
+        //  getBiggestTwoNumbersInFourNumbers();
+        /*  store the 4 points of polygon to calculate which has biggest lat and biggest lng
+        to draw the polygon correclty in case the user didn't draw in clockwise  */
+        //  Marker m1 = polygonMarkers.get(0);
+        // Marker m2 = polygonMarkers.get(1);
+        //Marker m3 = polygonMarkers.get(2);
+        //Marker m4 = polygonMarkers.get(3);
+
+
+        //polygonMarkers.set(0, m1);
         for (int i = 0; i < POLYGON_POINTS; i++) {
             options.add(polygonMarkers.get(i).getPosition()); //accessing the positions of polygonMarkers and putting them in "options"
         }
         polygonShape = mGoogleMap.addPolygon(options);
+
+        getBiggestTwoNumbersInFourNumbers();
+    }
+
+    private void getBiggestTwoNumbersInFourNumbers() {
+        double biggestLongitude1 = 0;
+        double biggestLongitude2 = 0;
+        double biggestLatitude1 = 0;
+        double biggestLatitude2 = 0;
+        int index = -1;
+        for (int i = 0; i < 4; i++) {
+            if (polygonMarkers.get(i).getPosition().longitude > biggestLongitude1) {
+                biggestLongitude1 = polygonMarkers.get(i).getPosition().longitude;
+                index = i; // store index of biggest longitude to skip it in the next for loop and get second big number
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            if (i == index) continue;
+            if (polygonMarkers.get(i).getPosition().longitude > biggestLongitude2)
+                biggestLongitude2 = polygonMarkers.get(i).getPosition().longitude;
+        }
+
+
+        Log.e("biggest 1 : ", String.valueOf(biggestLongitude1));
+        Log.e("biggest 2 : ", String.valueOf(biggestLongitude2));
+
+        Log.e("1 : ", String.valueOf(polygonMarkers.get(0).getPosition().longitude));
+        Log.e("2 : ", String.valueOf(polygonMarkers.get(1).getPosition().longitude));
+        Log.e("3 : ", String.valueOf(polygonMarkers.get(2).getPosition().longitude));
+        Log.e("4 : ", String.valueOf(polygonMarkers.get(3).getPosition().longitude));
+
 
     }
 
